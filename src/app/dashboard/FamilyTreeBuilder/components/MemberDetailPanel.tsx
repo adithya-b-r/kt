@@ -79,26 +79,28 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
             {/* Backdrop */}
             <div
                 className={cn(
-                    "fixed inset-0 bg-background/80 backdrop-blur-sm z-40 transition-opacity",
+                    "fixed inset-0 z-40 transition-opacity",
                     isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
                 )}
+                style={{ backgroundColor: 'rgba(100, 48, 58, 0.3)', backdropFilter: 'blur(4px)' }}
                 onClick={onClose}
             />
 
             {/* Panel */}
             <div
                 className={cn(
-                    "fixed right-0 top-0 h-full w-full max-w-md bg-card border-l shadow-xl z-50 transition-transform duration-300 overflow-y-auto",
+                    "fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-xl z-50 transition-transform duration-300 overflow-y-auto",
                     isOpen ? "translate-x-0" : "translate-x-full"
                 )}
+                style={{ borderLeft: '2px solid #d4c5cb' }}
             >
                 {/* Header */}
-                <div className="sticky top-0 bg-card border-b p-4 flex items-center justify-between">
-                    <h2 className="font-semibold text-lg">Member Details</h2>
+                <div className="sticky top-0 bg-white p-4 flex items-center justify-between" style={{ borderBottom: '1px solid #d4c5cb' }}>
+                    <h2 className="font-semibold text-lg" style={{ color: '#64303A' }}>Member Details</h2>
                     <div className="flex items-center gap-2">
                         {isEditing ? (
                             <>
-                                <Button size="sm" onClick={handleSave}>
+                                <Button size="sm" onClick={handleSave} className="text-white" style={{ backgroundColor: '#64303A' }}>
                                     <Save className="h-4 w-4 mr-1" />
                                     Save
                                 </Button>
@@ -138,7 +140,7 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
                                     <span>{member.first_name[0]}{member.last_name[0]}</span>
                                 )}
                             </div>
-                            <h3 className="text-xl font-bold">
+                            <h3 className="text-xl font-bold" style={{ color: '#64303A' }}>
                                 {member.first_name} {member.last_name}
                             </h3>
                             <div className="flex items-center justify-center gap-2 mt-2 flex-wrap">
@@ -170,6 +172,8 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
                                     <Input
                                         value={editData.first_name || ''}
                                         onChange={(e) => setEditData(prev => ({ ...prev, first_name: e.target.value }))}
+                                        className="focus-visible:outline-none ring-transparent focus-visible:ring-0 focus-visible:border-orange-900"
+                                        maxLength={50}
                                     />
                                 </div>
                                 <div>
@@ -177,6 +181,8 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
                                     <Input
                                         value={editData.last_name || ''}
                                         onChange={(e) => setEditData(prev => ({ ...prev, last_name: e.target.value }))}
+                                        className="focus-visible:outline-none ring-transparent focus-visible:ring-0 focus-visible:border-orange-900"
+                                        maxLength={50}
                                     />
                                 </div>
                             </div>
@@ -204,19 +210,21 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
                                     type="date"
                                     value={editData.birth_date || ''}
                                     onChange={(e) => setEditData(prev => ({ ...prev, birth_date: e.target.value }))}
+                                    className="focus-visible:outline-none ring-transparent focus-visible:ring-0 focus-visible:border-orange-900"
                                 />
                             </div>
 
                             <Separator />
 
                             <div>
-                                <Label className="text-muted-foreground">Deceased?</Label>
-                                <p className="text-xs text-muted-foreground mb-2">Leave empty if person is alive</p>
+                                <Label className="text-gray-600">Deceased?</Label>
+                                <p className="text-xs text-gray-600 mb-2">Leave empty if person is alive</p>
                                 <Input
                                     type="date"
                                     value={editData.death_date || ''}
                                     onChange={(e) => setEditData(prev => ({ ...prev, death_date: e.target.value }))}
                                     placeholder="Death date (if applicable)"
+                                    className="focus-visible:outline-none ring-transparent focus-visible:ring-0 focus-visible:border-orange-900"
                                 />
                             </div>
 
@@ -225,23 +233,23 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
                             {/* Coming Soon Section */}
                             <Collapsible>
                                 <CollapsibleTrigger asChild>
-                                    <Button variant="ghost" className="w-full justify-between text-muted-foreground">
+                                    <Button variant="ghost" className="w-full justify-between text-gray-600">
                                         <span className="flex items-center gap-2">
                                             <Lock className="h-4 w-4" />
                                             Cultural & Life Details
                                         </span>
                                         <div className="flex items-center gap-2">
-                                            <Badge variant="secondary" className="text-xs">Coming Soon</Badge>
+                                            <Badge variant="secondary" className="text-xs" style={{ backgroundColor: '#f5e6e9', color: '#64303A' }}>Coming Soon</Badge>
                                             <ChevronDown className="h-4 w-4" />
                                         </div>
                                     </Button>
                                 </CollapsibleTrigger>
                                 <CollapsibleContent>
-                                    <div className="p-4 bg-muted/30 rounded-lg mt-2 space-y-3">
-                                        <p className="text-sm text-muted-foreground">
+                                    <div className="p-4 rounded-lg mt-2 space-y-3" style={{ backgroundColor: '#f5e6e9' }}>
+                                        <p className="text-sm text-gray-600">
                                             The following fields will be available in the Heritage Explorer plan:
                                         </p>
-                                        <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                                        <ul className="text-sm text-gray-600 space-y-1 list-disc list-inside">
                                             <li>Birth & Death Places</li>
                                             <li>Religion & Caste</li>
                                             <li>Mother Tongue & Languages</li>
@@ -262,10 +270,10 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
                             <div className="space-y-4">
                                 {birthYear && (
                                     <div className="flex items-start gap-3">
-                                        <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
+                                        <Calendar className="h-5 w-5 text-gray-500 mt-0.5" />
                                         <div>
-                                            <p className="font-medium">Born</p>
-                                            <p className="text-sm text-muted-foreground">
+                                            <p className="font-medium" style={{ color: '#64303A' }}>Born</p>
+                                            <p className="text-sm text-gray-600">
                                                 {member.birth_date ? new Date(member.birth_date).toLocaleDateString('en-US', {
                                                     year: 'numeric',
                                                     month: 'long',
@@ -278,10 +286,10 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
 
                                 {isDeceased && deathYear && (
                                     <div className="flex items-start gap-3">
-                                        <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
+                                        <Calendar className="h-5 w-5 text-gray-500 mt-0.5" />
                                         <div>
-                                            <p className="font-medium">Died</p>
-                                            <p className="text-sm text-muted-foreground">
+                                            <p className="font-medium" style={{ color: '#64303A' }}>Died</p>
+                                            <p className="text-sm text-gray-600">
                                                 {member.death_date ? new Date(member.death_date).toLocaleDateString('en-US', {
                                                     year: 'numeric',
                                                     month: 'long',
@@ -298,23 +306,23 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
                             {/* Coming Soon Preview */}
                             <Collapsible>
                                 <CollapsibleTrigger asChild>
-                                    <Button variant="ghost" className="w-full justify-between text-muted-foreground">
+                                    <Button variant="ghost" className="w-full justify-between text-gray-600">
                                         <span className="flex items-center gap-2">
                                             <Lock className="h-4 w-4" />
                                             Cultural & Life Details
                                         </span>
                                         <div className="flex items-center gap-2">
-                                            <Badge variant="secondary" className="text-xs">Coming Soon</Badge>
+                                            <Badge variant="secondary" className="text-xs" style={{ backgroundColor: '#f5e6e9', color: '#64303A' }}>Coming Soon</Badge>
                                             <ChevronDown className="h-4 w-4" />
                                         </div>
                                     </Button>
                                 </CollapsibleTrigger>
                                 <CollapsibleContent>
-                                    <div className="p-4 bg-muted/30 rounded-lg mt-2">
-                                        <p className="text-sm text-muted-foreground mb-3">
+                                    <div className="p-4 rounded-lg mt-2" style={{ backgroundColor: '#f5e6e9' }}>
+                                        <p className="text-sm text-gray-600 mb-3">
                                             Unlock detailed cultural and life information with Heritage Explorer:
                                         </p>
-                                        <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                                        <ul className="text-sm text-gray-600 space-y-1 list-disc list-inside">
                                             <li>Religion, Caste & Gotra</li>
                                             <li>Languages & Mother Tongue</li>
                                             <li>Education & Career History</li>
@@ -330,7 +338,7 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
 
                             {/* Actions */}
                             <div className="space-y-3">
-                                <Button className="w-full" onClick={onAddRelationship}>
+                                <Button className="w-full text-white" style={{ backgroundColor: '#64303A' }} onClick={onAddRelationship}>
                                     <Heart className="h-4 w-4 mr-2" />
                                     Add Relationship
                                 </Button>

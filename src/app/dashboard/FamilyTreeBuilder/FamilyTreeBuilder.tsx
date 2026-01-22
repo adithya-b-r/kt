@@ -208,10 +208,10 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gradient-subtle flex items-center justify-center">
+            <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F5F2E9' }}>
                 <div className="text-center">
-                    <div className="animate-spin w-12 h-12 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-                    <p className="text-muted-foreground">Loading your family tree...</p>
+                    <div className="animate-spin w-12 h-12 border-2 rounded-full mx-auto mb-4" style={{ borderColor: '#64303A', borderTopColor: 'transparent' }}></div>
+                    <p className="text-gray-600">Loading your family tree...</p>
                 </div>
             </div>
         );
@@ -219,13 +219,13 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
 
     if (!familyTree) {
         return (
-            <div className="min-h-screen bg-gradient-subtle flex items-center justify-center">
+            <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F5F2E9' }}>
                 <div className="text-center">
-                    <Users className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-                    <h2 className="text-xl font-bold mb-2">No Family Tree Found</h2>
-                    <p className="text-muted-foreground mb-4">Create your family tree from the dashboard first.</p>
+                    <Users className="h-16 w-16 mx-auto mb-4 text-gray-400" />
+                    <h2 className="text-xl font-bold mb-2" style={{ color: '#64303A' }}>No Family Tree Found</h2>
+                    <p className="text-gray-600 mb-4">Create your family tree from the dashboard first.</p>
                     <Link href="/dashboard">
-                        <Button>Go to Dashboard</Button>
+                        <Button style={{ backgroundColor: '#64303A', color: 'white' }}>Go to Dashboard</Button>
                     </Link>
                 </div>
             </div>
@@ -233,9 +233,9 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-subtle">
+        <div className="min-h-screen" style={{ backgroundColor: '#F5F2E9' }}>
             {/* Header */}
-            <header className="bg-card border-b border-border sticky top-0 z-40">
+            <header className="bg-white border-b sticky top-0 z-40" style={{ borderColor: '#d4c5cb' }}>
                 <div className="container mx-auto px-4 py-3">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
@@ -246,8 +246,8 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
                                 </Button>
                             </Link>
                             <div>
-                                <h1 className="text-xl font-bold">{familyTree.name}</h1>
-                                <p className="text-sm text-muted-foreground">
+                                <h1 className="text-xl font-bold" style={{ color: '#64303A' }}>{familyTree.name}</h1>
+                                <p className="text-sm text-gray-600">
                                     {familyMembers.length}/25 members
                                 </p>
                             </div>
@@ -316,6 +316,8 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
                                     value={newMemberData.first_name}
                                     onChange={(e) => setNewMemberData(prev => ({ ...prev, first_name: e.target.value }))}
                                     placeholder="Enter first name"
+                                    className="focus-visible:outline-none ring-transparent focus-visible:ring-0 focus-visible:border-orange-900"
+                                    maxLength={50}
                                 />
                             </div>
                             <div>
@@ -325,6 +327,8 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
                                     value={newMemberData.last_name}
                                     onChange={(e) => setNewMemberData(prev => ({ ...prev, last_name: e.target.value }))}
                                     placeholder="Enter last name"
+                                    className="focus-visible:outline-none ring-transparent focus-visible:ring-0 focus-visible:border-orange-900"
+                                    maxLength={50}
                                 />
                             </div>
                         </div>
@@ -353,6 +357,7 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
                                 type="date"
                                 value={newMemberData.birth_date}
                                 onChange={(e) => setNewMemberData(prev => ({ ...prev, birth_date: e.target.value }))}
+                                className="focus-visible:outline-none ring-transparent focus-visible:ring-0 focus-visible:border-orange-900"
                             />
                         </div>
 
@@ -363,6 +368,7 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
                                 type="date"
                                 value={newMemberData.death_date}
                                 onChange={(e) => setNewMemberData(prev => ({ ...prev, death_date: e.target.value }))}
+                                className="focus-visible:outline-none ring-transparent focus-visible:ring-0 focus-visible:border-orange-900"
                             />
                         </div>
 
@@ -396,7 +402,7 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
                         </Collapsible>
 
                         <div className="flex gap-2 pt-2">
-                            <Button onClick={handleAddMember} className="flex-1">
+                            <Button onClick={handleAddMember} className="flex-1 text-white" style={{ backgroundColor: '#64303A' }}>
                                 <Plus className="h-4 w-4 mr-2" />
                                 Add Member
                             </Button>
