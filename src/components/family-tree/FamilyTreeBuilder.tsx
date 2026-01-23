@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useFamilyTree, FamilyMember } from '@/components/hooks/useFamilyTree';
-import { TreeVisualization } from './TreeVisualization';
+import { TreeVisualization, TreeVisualizationHandle } from './TreeVisualization';
 import { MemberDetailPanel } from './MemberDetailPanel';
 import { AddRelationshipDialog } from './AddRelationshipDialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -218,7 +218,7 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
         setIsAddingMember(true);
     };
 
-    const treeRef = useRef<{ getExportData: () => Promise<{ dataUrl: string; width: number; height: number }> }>(null);
+    const treeRef = useRef<TreeVisualizationHandle>(null);
 
     const handleExportPDF = async () => {
         if (!treeRef.current) return;
@@ -226,7 +226,7 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
         const toastId = toast.loading('Generating PDF...');
 
         try {
-            const { dataUrl, width, height } = await treeRef.current.getExportData();
+            const { dataUrl, width, height } = await treeRef.current.getExportData({ scale: 0.5 });
 
             const pdf = new jsPDF({
                 orientation: width > height ? 'landscape' : 'portrait',

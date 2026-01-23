@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { ZoomIn, ZoomOut, RotateCcw, Plus, Users, Move, Crosshair } from 'lucide-react';
 import { FamilyMember, Relationship } from '@/components/hooks/useFamilyTree';
 import { MemberCard } from './MemberCard';
-import { toPng } from 'html-to-image';
 
 interface TreeVisualizationProps {
     familyMembers: FamilyMember[];
@@ -12,6 +11,7 @@ interface TreeVisualizationProps {
     selectedMember: FamilyMember | null;
     onSelectMember: (member: FamilyMember) => void;
     onAddMember: (relationType?: 'parent' | 'spouse' | 'child', relatedTo?: FamilyMember) => void;
+    containerRef?: React.RefObject<HTMLDivElement | null>;
 }
 
 interface PositionedMember {
@@ -28,8 +28,10 @@ const H_GAP = 30;
 const V_GAP = 80;
 const SPOUSE_GAP = 50;
 
+import { toPng } from 'html-to-image';
+
 export interface TreeVisualizationHandle {
-    getExportData: () => Promise<{ dataUrl: string; width: number; height: number }>;
+    getExportData: (options?: { scale?: number }) => Promise<{ dataUrl: string; width: number; height: number }>;
 }
 
 export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeVisualizationProps>(({
@@ -45,44 +47,6 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
     const [pan, setPan] = useState({ x: 0, y: 0 });
     const [isDragging, setIsDragging] = useState(false);
     const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-
-    // Handle Export logic exposed via ref
-    React.useImperativeHandle(ref, () => ({
-        getExportData: async () => {
-            if (!contentRef.current) throw new Error('Tree content not found');
-
-            // 1. Calculate bounding box of the entire tree
-            if (positionedMembers.length === 0) {
-                return { dataUrl: '', width: 0, height: 0 };
-            }
-
-            const minX = Math.min(...positionedMembers.map(pm => pm.x));
-            const maxX = Math.max(...positionedMembers.map(pm => pm.x + CARD_WIDTH));
-            const minY = Math.min(...positionedMembers.map(pm => pm.y));
-            const maxY = Math.max(...positionedMembers.map(pm => pm.y + CARD_HEIGHT));
-
-            const PADDING = 50;
-            const width = maxX - minX + (PADDING * 2);
-            const height = maxY - minY + (PADDING * 2);
-
-            // 2. Generate the image with specific style overrides to force centering and full size
-            const dataUrl = await toPng(contentRef.current, {
-                quality: 0.95,
-                backgroundColor: '#F5F2E9',
-                width: width,
-                height: height,
-                style: {
-                    // Ignore current zoom/pan transform
-                    transform: `translate(${-minX + PADDING}px, ${-minY + PADDING}px)`,
-                    transformOrigin: 'top left',
-                    width: `${width}px`,
-                    height: `${height}px`,
-                }
-            });
-
-            return { dataUrl, width, height };
-        }
-    }));
 
     // Build relationship maps
     const { spouseMap, childrenMap, parentsMap } = useMemo(() => {
@@ -532,6 +496,51 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
         return elements;
     }, [positionedMembers, relationships, getChildrenOfCouple]);
 
+    // Handle Export logic exposed via ref
+    React.useImperativeHandle(ref, () => ({
+        getExportData: async (options) => {
+            if (!contentRef.current) throw new Error('Tree content not found');
+
+            // 1. Calculate bounding box of the entire tree
+            if (positionedMembers.length === 0) {
+                return { dataUrl: '', width: 0, height: 0 };
+            }
+
+            const minX = Math.min(...positionedMembers.map(pm => pm.x));
+            const maxX = Math.max(...positionedMembers.map(pm => pm.x + CARD_WIDTH));
+            const minY = Math.min(...positionedMembers.map(pm => pm.y));
+            const maxY = Math.max(...positionedMembers.map(pm => pm.y + CARD_HEIGHT));
+
+            const PADDING = 50;
+            const SCALE = options?.scale || 1; // Default to 1 if not specified
+            const width = (maxX - minX) * SCALE + (PADDING * 2);
+            const height = (maxY - minY) * SCALE + (PADDING * 2);
+
+            // 2. Generate the image with specific style overrides to force centering and full size
+            // We use matrix transform to reliably scale and translate: x' = x*S + tx
+            // tx = PADDING - minX * S
+            const tx = PADDING - minX * SCALE;
+            const ty = PADDING - minY * SCALE;
+
+            const dataUrl = await toPng(contentRef.current, {
+                quality: 0.95,
+                backgroundColor: '#F5F2E9',
+                width: width,
+                height: height,
+                pixelRatio: 3, // Higher pixel ratio for better clarity
+                style: {
+                    // Ignore current zoom/pan transform and apply export scale
+                    transform: `matrix(${SCALE}, 0, 0, ${SCALE}, ${tx}, ${ty})`,
+                    transformOrigin: 'top left',
+                    width: `${width}px`,
+                    height: `${height}px`,
+                }
+            });
+
+            return { dataUrl, width, height };
+        }
+    }));
+
     // Pan handlers
     const handleMouseDown = useCallback((e: React.MouseEvent) => {
         const target = e.target as HTMLElement;
@@ -642,7 +651,7 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
                 ref={containerRef}
                 className="p-0 h-full cursor-grab active:cursor-grabbing relative overflow-hidden touch-none"
                 style={{
-                    background: 'linear-gradient(135deg, hsl(var(--muted) / 0.3) 0%, hsl(var(--background)) 50%, hsl(var(--muted) / 0.2) 100%)',
+                    background: 'linear-gradient(135deg, rgba(243, 244, 246, 0.3) 0%, #ffffff 50%, rgba(243, 244, 246, 0.2) 100%)',
                 }}
                 onMouseDown={handleMouseDown}
                 onMouseMove={handleMouseMove}
