@@ -21,7 +21,6 @@ export async function POST(request: Request) {
 
         await connectToDatabase();
 
-        // Check if user exists
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             return NextResponse.json(
@@ -30,11 +29,9 @@ export async function POST(request: Request) {
             );
         }
 
-        // Hash password
         const salt = await bcrypt.genSalt(10);
         const password_hash = await bcrypt.hash(password, salt);
 
-        // Create user
         const newUser = await User.create({
             first_name,
             last_name,
@@ -42,14 +39,12 @@ export async function POST(request: Request) {
             password_hash,
         });
 
-        // Create default family tree
         await FamilyTree.create({
             user_id: newUser._id,
             name: `${first_name}'s Family Tree`,
             description: 'My first family tree',
         });
 
-        // Return user without sensitive data
         const userResponse = {
             _id: newUser._id,
             first_name: newUser.first_name,

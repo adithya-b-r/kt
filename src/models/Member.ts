@@ -10,7 +10,7 @@ export interface IMember {
     death_date?: Date;
     photo_url?: string;
     is_root?: boolean;
-    attributes?: Record<string, any>; // Flexible for future feilds
+    attributes?: Record<string, any>;
     created_at: Date;
     updated_at: Date;
 }

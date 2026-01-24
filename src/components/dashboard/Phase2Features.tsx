@@ -20,7 +20,6 @@ const Phase2Features = () => {
       </div>
       <div className="px-6 py-4">
         <div className="space-y-4 flex flex-col">
-          {/* AI Life Story */}
           <Link href="/story">
             <div className="p-4 rounded-lg border border-blue-200 bg-blue-50 hover:bg-blue-100 transition-colors cursor-pointer group">
               <div className="flex items-start justify-between">
@@ -40,7 +39,6 @@ const Phase2Features = () => {
             </div>
           </Link>
 
-          {/* Timeline & Maps */}
           <Link href="/timeline">
             <div className="p-4 rounded-lg border border-green-200 bg-green-50 hover:bg-green-100 transition-colors cursor-pointer group">
               <div className="flex items-start justify-between">
@@ -60,7 +58,6 @@ const Phase2Features = () => {
             </div>
           </Link>
 
-          {/* Complete Profile CTA */}
           <Link href="/profile">
             <div className="p-4 rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400 transition-colors cursor-pointer group">
               <div className="flex items-center justify-between">

@@ -26,17 +26,14 @@ export async function PUT(
 }
 
 export async function DELETE(
-    request: Request,
     { params }: { params: Promise<{ memberId: string }> }
 ) {
     try {
         const { memberId } = await params;
         await connectToDatabase();
 
-        // Delete member
         await Member.findByIdAndDelete(memberId);
 
-        // Delete associated relationships
         await Relationship.deleteMany({
             $or: [{ person1_id: memberId }, { person2_id: memberId }]
         });

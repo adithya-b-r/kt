@@ -34,7 +34,6 @@ const QuickActions = ({ familyTree }: QuickActionsProps) => {
             </button>
           </Link>
           
-          {/* Phase 2 Features */}
           <Link href="/story">
             <button 
               className="h-20 w-full flex flex-col items-center justify-center gap-2 rounded-lg text-white font-medium hover:opacity-90 transition-all"
@@ -55,7 +54,6 @@ const QuickActions = ({ familyTree }: QuickActionsProps) => {
             </button>
           </Link>
           
-          {/* Coming Soon Features */}
           <div>
             <button 
               className="h-20 w-full flex flex-col items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white text-gray-600 opacity-60 cursor-not-allowed"

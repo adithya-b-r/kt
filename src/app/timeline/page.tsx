@@ -6,8 +6,8 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { 
-    MapPin, 
+import {
+    MapPin,
     ArrowLeft,
     AlertCircle,
     Calendar,
@@ -50,9 +50,9 @@ export default function TimelinePage() {
             if (response.ok) {
                 const data = await response.json();
                 const profile = data.user;
-                
+
                 setProfileComplete(profile.profile_completed || false);
-                
+
                 if (profile.profile_completed) {
                     buildTimeline(profile);
                     setLocations(profile.location_history || []);
@@ -69,7 +69,6 @@ export default function TimelinePage() {
     const buildTimeline = (profile: any) => {
         const events: TimelineEvent[] = [];
 
-        // Birth
         if (profile.date_of_birth) {
             const birthYear = new Date(profile.date_of_birth).getFullYear();
             events.push({
@@ -83,7 +82,6 @@ export default function TimelinePage() {
             });
         }
 
-        // Education
         if (profile.education) {
             profile.education.forEach((edu: any) => {
                 if (edu.year && edu.degree) {
@@ -100,7 +98,6 @@ export default function TimelinePage() {
             });
         }
 
-        // Work
         if (profile.work_history) {
             profile.work_history.forEach((work: any) => {
                 if (work.start_year && work.position) {
@@ -117,7 +114,6 @@ export default function TimelinePage() {
             });
         }
 
-        // Life Events
         if (profile.life_events) {
             profile.life_events.forEach((event: any) => {
                 if (event.year && event.title) {
@@ -134,7 +130,6 @@ export default function TimelinePage() {
             });
         }
 
-        // Location History
         if (profile.location_history) {
             profile.location_history.forEach((loc: any) => {
                 if (loc.year && loc.location) {
@@ -151,7 +146,6 @@ export default function TimelinePage() {
             });
         }
 
-        // Sort by year
         events.sort((a, b) => a.year - b.year);
         setTimeline(events);
     };
@@ -169,7 +163,6 @@ export default function TimelinePage() {
 
     return (
         <div className="min-h-screen" style={{ backgroundColor: '#F5F2E9' }}>
-            {/* Header */}
             <header className="bg-white border-b sticky top-0 z-40" style={{ borderColor: '#d4c5cb' }}>
                 <div className="container mx-auto px-4 py-3">
                     <div className="flex items-center justify-between">
@@ -193,7 +186,6 @@ export default function TimelinePage() {
                 </div>
             </header>
 
-            {/* Main Content */}
             <div className="container mx-auto px-4 py-8 max-w-6xl">
                 {!profileComplete ? (
                     <Card className="border-yellow-200 bg-yellow-50">
@@ -224,7 +216,6 @@ export default function TimelinePage() {
                     </Card>
                 ) : (
                     <div className="space-y-8">
-                        {/* Timeline */}
                         <Card>
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
@@ -248,24 +239,20 @@ export default function TimelinePage() {
                                     </div>
                                 ) : (
                                     <div className="relative">
-                                        {/* Timeline Line */}
                                         <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gray-300"></div>
-                                        
-                                        {/* Timeline Events */}
+
                                         <div className="space-y-8">
                                             {timeline.map((event, index) => {
                                                 const Icon = event.icon;
                                                 return (
                                                     <div key={index} className="relative flex gap-6">
-                                                        {/* Icon */}
-                                                        <div 
+                                                        <div
                                                             className="shrink-0 w-16 h-16 rounded-full flex items-center justify-center z-10"
                                                             style={{ backgroundColor: event.color }}
                                                         >
                                                             <Icon className="h-7 w-7 text-white" />
                                                         </div>
-                                                        
-                                                        {/* Content */}
+
                                                         <div className="flex-1 pb-8">
                                                             <div className="bg-white p-4 rounded-lg shadow-sm border">
                                                                 <div className="flex items-start justify-between mb-2">
@@ -275,11 +262,11 @@ export default function TimelinePage() {
                                                                             <p className="text-gray-600">{event.description}</p>
                                                                         )}
                                                                     </div>
-                                                                    <span 
+                                                                    <span
                                                                         className="text-sm font-bold px-3 py-1 rounded-full"
-                                                                        style={{ 
+                                                                        style={{
                                                                             backgroundColor: `${event.color}20`,
-                                                                            color: event.color 
+                                                                            color: event.color
                                                                         }}
                                                                     >
                                                                         {event.year}
@@ -302,7 +289,6 @@ export default function TimelinePage() {
                             </CardContent>
                         </Card>
 
-                        {/* Location Map */}
                         <Card>
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
@@ -326,12 +312,11 @@ export default function TimelinePage() {
                                     </div>
                                 ) : (
                                     <div className="space-y-4">
-                                        {/* Simple location list for now */}
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             {locations.map((loc, index) => (
                                                 <div key={index} className="p-4 border rounded-lg bg-white">
                                                     <div className="flex items-start gap-3">
-                                                        <div 
+                                                        <div
                                                             className="shrink-0 w-10 h-10 rounded-full flex items-center justify-center"
                                                             style={{ backgroundColor: '#64303A' }}
                                                         >
@@ -345,11 +330,11 @@ export default function TimelinePage() {
                                                             {loc.description && (
                                                                 <p className="text-sm text-gray-500 mt-1">{loc.description}</p>
                                                             )}
-                                                            <span 
+                                                            <span
                                                                 className="inline-block text-xs font-semibold mt-2 px-2 py-1 rounded"
-                                                                style={{ 
+                                                                style={{
                                                                     backgroundColor: '#64303A20',
-                                                                    color: '#64303A' 
+                                                                    color: '#64303A'
                                                                 }}
                                                             >
                                                                 {loc.year}
@@ -360,7 +345,6 @@ export default function TimelinePage() {
                                             ))}
                                         </div>
 
-                                        {/* Note about future Google Maps integration */}
                                         <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                                             <p className="text-blue-900 text-sm">
                                                 🗺️ <strong>Coming soon:</strong> Interactive Google Maps visualization showing your journey across cities and countries.

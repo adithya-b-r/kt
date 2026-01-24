@@ -90,7 +90,6 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
 
     return (
         <>
-            {/* Backdrop */}
             <div
                 className={cn(
                     "fixed inset-0 z-40 transition-opacity",
@@ -100,7 +99,6 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
                 onClick={onClose}
             />
 
-            {/* Panel */}
             <div
                 className={cn(
                     "fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-xl z-50 transition-transform duration-300 overflow-y-auto",
@@ -108,7 +106,6 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
                 )}
                 style={{ borderLeft: '2px solid #d4c5cb' }}
             >
-                {/* Header */}
                 <div className="sticky top-0 bg-white p-4 flex items-center justify-between" style={{ borderBottom: '1px solid #d4c5cb' }}>
                     <h2 className="font-semibold text-lg" style={{ color: '#64303A' }}>Member Details</h2>
                     <div className="flex items-center gap-2">
@@ -141,7 +138,6 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
                 </div>
 
                 <div className="p-6 space-y-6">
-                    {/* Profile Header */}
                     {!isEditing && (
                         <div className="text-center">
                             <div className={cn(
@@ -182,10 +178,8 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
                         </div>
                     )}
 
-                    {/* Edit Form - MVP Essential Fields Only */}
                     {isEditing ? (
                         <div className="space-y-4">
-                            {/* Essential Fields */}
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <Label>First Name *</Label>
@@ -259,7 +253,6 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
 
                             <Separator />
 
-                            {/* Coming Soon Section */}
                             <Collapsible>
                                 <CollapsibleTrigger asChild>
                                     <Button variant="ghost" className="w-full justify-between text-gray-600">
@@ -295,7 +288,6 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
                         </div>
                     ) : (
                         <>
-                            {/* View Mode - Essential Details */}
                             <div className="space-y-4">
                                 {parents.length > 0 && (
                                     <div>
@@ -356,7 +348,6 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
 
                             <Separator />
 
-                            {/* Coming Soon Preview */}
                             <Collapsible>
                                 <CollapsibleTrigger asChild>
                                     <Button variant="ghost" className="w-full justify-between text-gray-600">
@@ -389,7 +380,6 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
 
                             <Separator />
 
-                            {/* Actions */}
                             <div className="space-y-3">
                                 <Button className="w-full text-white" style={{ backgroundColor: '#64303A' }} onClick={onAddRelationship}>
                                     <Heart className="h-4 w-4 mr-2" />

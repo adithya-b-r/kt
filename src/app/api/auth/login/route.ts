@@ -20,7 +20,6 @@ export async function POST(request: Request) {
 
         await connectToDatabase();
 
-        // Find user
         const user = await User.findOne({ email });
         if (!user) {
             return NextResponse.json(
@@ -29,7 +28,6 @@ export async function POST(request: Request) {
             );
         }
 
-        // Check password
         const isMatch = await bcrypt.compare(password, user.password_hash);
         if (!isMatch) {
             return NextResponse.json(
@@ -45,7 +43,6 @@ export async function POST(request: Request) {
             email: user.email,
         };
 
-        // Issue JWT and set as httpOnly cookie for API auth
         const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '7d' });
 
         const res = NextResponse.json({
@@ -58,7 +55,7 @@ export async function POST(request: Request) {
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
             path: '/',
-            maxAge: 60 * 60 * 24 * 7, // 7 days
+            maxAge: 60 * 60 * 24 * 7, 
         });
 
         return res;

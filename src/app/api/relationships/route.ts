@@ -11,7 +11,6 @@ export async function POST(request: Request) {
 
         await connectToDatabase();
 
-        // Prevent duplicates (double check backend side)
         const existing = await Relationship.findOne({
             tree_id: body.tree_id,
             person1_id: body.person1_id,

@@ -6,8 +6,8 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { 
-    BookOpen, 
+import {
+    BookOpen,
     ArrowLeft,
     Loader2,
     Sparkles,
@@ -37,7 +37,6 @@ export default function StoryPage() {
             if (response.ok) {
                 const data = await response.json();
                 setProfileComplete(data.user.profile_completed || false);
-                // If a story already exists in MongoDB, show it so the user isn't forced to regenerate
                 if (data.user.generated_story) {
                     setStory(data.user.generated_story);
                 }
@@ -81,7 +80,7 @@ export default function StoryPage() {
 
     const downloadStory = () => {
         if (!story) return;
-        
+
         const element = document.createElement('a');
         const file = new Blob([story], { type: 'text/plain' });
         element.href = URL.createObjectURL(file);
@@ -187,7 +186,7 @@ export default function StoryPage() {
 
                                 <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
                                     <p className="text-amber-900 text-sm font-medium">
-                                        ⚠️ Important: This story will be generated from information provided by you. 
+                                        ⚠️ Important: This story will be generated from information provided by you.
                                         AI will not add any speculative or fictional elements.
                                     </p>
                                 </div>
@@ -234,7 +233,7 @@ export default function StoryPage() {
                                 </div>
 
                                 <div className="prose prose-lg max-w-none">
-                                    <div 
+                                    <div
                                         className="whitespace-pre-wrap text-gray-800 leading-relaxed"
                                         style={{ fontFamily: 'Georgia, serif' }}
                                     >

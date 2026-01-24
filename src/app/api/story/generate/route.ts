@@ -25,7 +25,6 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
         }
 
-        // Check if profile is complete
         if (!user.profile_completed) {
             return NextResponse.json({ 
                 error: 'Profile incomplete',
@@ -34,7 +33,6 @@ export async function POST(request: NextRequest) {
             }, { status: 400 });
         }
 
-        // Initialize Gemini
         if (!GEMINI_API_KEY) {
             return NextResponse.json({ 
                 error: 'Gemini API key not configured' 
@@ -42,18 +40,14 @@ export async function POST(request: NextRequest) {
         }
 
         const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-        // Use current public model identifier; the previous ID gemini-1.5-flash is deprecated on v1beta
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
 
-        // Build the prompt from user data
         const prompt = buildStoryPrompt(user);
 
-        // Generate the story
         const result = await model.generateContent(prompt);
         const response = await result.response;
         const story = response.text();
 
-        // Persist generated story on the user document
         await User.findByIdAndUpdate(decoded.userId, {
             generated_story: story,
             story_generated_at: new Date(),
@@ -93,7 +87,6 @@ FACTUAL INFORMATION PROVIDED:
 
 `;
 
-    // Birth Information
     if (user.date_of_birth) {
         const birthDate = new Date(user.date_of_birth);
         prompt += `Birth Date: ${birthDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}\n`;
@@ -107,12 +100,10 @@ FACTUAL INFORMATION PROVIDED:
         prompt += '\n';
     }
 
-    // Current Location
     if (user.current_location) {
         prompt += `Current Location: ${user.current_location}\n`;
     }
 
-    // Education
     if (user.education && user.education.length > 0) {
         prompt += '\nEDUCATION:\n';
         user.education.forEach((edu: any) => {
@@ -125,7 +116,6 @@ FACTUAL INFORMATION PROVIDED:
         });
     }
 
-    // Work History
     if (user.work_history && user.work_history.length > 0) {
         prompt += '\nWORK HISTORY:\n';
         user.work_history.forEach((work: any) => {
@@ -145,7 +135,6 @@ FACTUAL INFORMATION PROVIDED:
         });
     }
 
-    // Life Events
     if (user.life_events && user.life_events.length > 0) {
         prompt += '\nLIFE EVENTS:\n';
         user.life_events.forEach((event: any) => {
@@ -158,7 +147,6 @@ FACTUAL INFORMATION PROVIDED:
         });
     }
 
-    // Location History
     if (user.location_history && user.location_history.length > 0) {
         prompt += '\nLOCATIONS LIVED:\n';
         user.location_history.forEach((loc: any) => {

@@ -8,7 +8,7 @@ interface MemberCardProps {
     member: FamilyMember;
     isSelected?: boolean;
     isRoot?: boolean;
-    isInLaw?: boolean; // New: for red/coral border styling
+    isInLaw?: boolean;
     onClick: () => void;
     onAddParent?: () => void;
     onAddSpouse?: () => void;
@@ -34,7 +34,6 @@ export const MemberCard: React.FC<MemberCardProps> = ({
     const birthDate = member.birth_date ? new Date(member.birth_date) : null;
     const isDeceased = !!member.death_date;
 
-    // Format birth date like "b. July 24 1986"
     const formatBirthDate = () => {
         if (!birthDate) return null;
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -43,7 +42,6 @@ export const MemberCard: React.FC<MemberCardProps> = ({
 
     return (
         <div className="relative group">
-            {/* Add Parent Button - Top (not allowed for root person) */}
             {showAddButtons && !hasParents && !isRoot && onAddParent && (
                 <div className="absolute -top-10 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-200 z-20">
                     <Button
@@ -60,12 +58,10 @@ export const MemberCard: React.FC<MemberCardProps> = ({
                 </div>
             )}
 
-            {/* Main Card - MyHeritage style */}
             <div
                 onClick={onClick}
                 className={cn(
                     "relative bg-card rounded-lg cursor-pointer transition-all duration-200 w-40 shadow-md hover:shadow-lg border-2",
-                    // Color coding: cyan/blue for blood relatives, coral/red for in-laws
                     isInLaw
                         ? "border-rose-400"
                         : "border-cyan-400",
@@ -73,9 +69,7 @@ export const MemberCard: React.FC<MemberCardProps> = ({
                     isDeceased && "opacity-85"
                 )}
             >
-                {/* Card content */}
                 <div className="p-3">
-                    {/* Avatar */}
                     <div className="flex justify-center mb-2">
                         <div className={cn(
                             "w-14 h-14 rounded-full flex items-center justify-center overflow-hidden bg-muted relative",
@@ -97,13 +91,11 @@ export const MemberCard: React.FC<MemberCardProps> = ({
                         </div>
                     </div>
 
-                    {/* Name */}
                     <div className="text-center">
                         <h3 className="font-semibold text-sm leading-tight text-foreground">
                             {member.first_name} {member.last_name}
                         </h3>
 
-                        {/* Birth date */}
                         {formatBirthDate() && (
                             <p className="text-xs text-muted-foreground mt-1">
                                 {formatBirthDate()}
@@ -112,19 +104,16 @@ export const MemberCard: React.FC<MemberCardProps> = ({
                     </div>
                 </div>
 
-                {/* Edit icon - bottom right */}
                 <div className="absolute bottom-2 right-2">
                     <Pencil className="h-3.5 w-3.5 text-muted-foreground/50" />
                 </div>
 
-                {/* Root indicator */}
                 {isRoot && (
                     <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-primary rounded-full flex items-center justify-center shadow-sm border-2 border-background">
                         <User className="h-3 w-3 text-primary-foreground" />
                     </div>
                 )}
 
-                {/* Deceased indicator */}
                 {isDeceased && (
                     <div className="absolute -top-1.5 -left-1.5 w-5 h-5 bg-muted rounded-full flex items-center justify-center shadow-sm border-2 border-background">
                         <span className="text-xs">†</span>
@@ -132,7 +121,6 @@ export const MemberCard: React.FC<MemberCardProps> = ({
                 )}
             </div>
 
-            {/* Add Child Button - Bottom */}
             {showAddButtons && onAddChild && (
                 <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-200 z-20">
                     <Button
@@ -149,7 +137,6 @@ export const MemberCard: React.FC<MemberCardProps> = ({
                 </div>
             )}
 
-            {/* Add Spouse Button - Right (only show on hover) */}
             {showAddButtons && !hasSpouse && onAddSpouse && (
                 <div className="absolute top-1/2 -right-10 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-200 z-20">
                     <Button

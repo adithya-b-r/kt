@@ -5,7 +5,7 @@ export interface IRelationship {
     tree_id: mongoose.Types.ObjectId;
     person1_id: mongoose.Types.ObjectId;
     person2_id: mongoose.Types.ObjectId;
-    relationship_type: string; // 'parent_child' | 'spouse'
+    relationship_type: string;
     created_at: Date;
 }
 

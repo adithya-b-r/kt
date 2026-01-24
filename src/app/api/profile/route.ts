@@ -5,7 +5,6 @@ import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this';
 
-// Get user profile
 export async function GET(request: NextRequest) {
     try {
         const token = request.cookies.get('auth_token')?.value;
@@ -31,7 +30,6 @@ export async function GET(request: NextRequest) {
     }
 }
 
-// Update user profile
 export async function PUT(request: NextRequest) {
     try {
         const token = request.cookies.get('auth_token')?.value;
@@ -45,7 +43,6 @@ export async function PUT(request: NextRequest) {
         
         await dbConnect();
         
-        // Check if profile is complete
         const profileCompleted = !!(
             body.date_of_birth &&
             body.place_of_birth &&

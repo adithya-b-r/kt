@@ -63,14 +63,11 @@ export default function ProfilePage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     
-    // Basic Info (from MongoDB)
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     
-    // Original values for change detection
     const [originalData, setOriginalData] = useState<any>(null);
     
-    // Editable fields
     const [phone, setPhone] = useState('');
     const [dateOfBirth, setDateOfBirth] = useState('');
     const [placeOfBirth, setPlaceOfBirth] = useState('');
@@ -79,16 +76,12 @@ export default function ProfilePage() {
     const [birthCountry, setBirthCountry] = useState('India');
     const [currentLocation, setCurrentLocation] = useState('');
     
-    // Education
     const [education, setEducation] = useState<EducationEntry[]>([]);
     
-    // Work History
     const [workHistory, setWorkHistory] = useState<WorkEntry[]>([]);
     
-    // Life Events
     const [lifeEvents, setLifeEvents] = useState<LifeEvent[]>([]);
     
-    // Location History
     const [locationHistory, setLocationHistory] = useState<LocationHistory[]>([]);
 
     useEffect(() => {
@@ -97,7 +90,6 @@ export default function ProfilePage() {
             return;
         }
         
-        // Set first and last name from useAuth by default
         setFirstName(user.first_name || '');
         setLastName(user.last_name || '');
         
@@ -111,7 +103,6 @@ export default function ProfilePage() {
                 const data = await response.json();
                 const profile = data.user;
                 
-                // Editable fields
                 setPhone(profile.phone || '');
                 setDateOfBirth(profile.date_of_birth ? new Date(profile.date_of_birth).toISOString().split('T')[0] : '');
                 setPlaceOfBirth(profile.place_of_birth || '');
@@ -125,7 +116,6 @@ export default function ProfilePage() {
                 setLifeEvents(profile.life_events || []);
                 setLocationHistory(profile.location_history || []);
                 
-                // Store original data for change detection
                 setOriginalData({
                     first_name: user?.first_name || '',
                     last_name: user?.last_name || '',
@@ -154,10 +144,8 @@ export default function ProfilePage() {
     };
 
     const hasChanges = () => {
-        // If we don't have a baseline yet, allow save to proceed
         if (!originalData) return true;
         
-        // Create snapshots of current state using the same filtering as save
         const currentEducation = education.filter(e => e.degree || e.institution);
         const currentWorkHistory = workHistory.filter(w => w.company || w.position);
         const currentLifeEvents = lifeEvents.filter(e => e.title);
@@ -181,7 +169,6 @@ export default function ProfilePage() {
     };
 
     const handleSave = async () => {
-        // Check if there are any changes
         if (!hasChanges()) {
             toast.info('No changes were made');
             return;
@@ -211,14 +198,12 @@ export default function ProfilePage() {
             });
 
             if (response.ok) {
-                // Update auth context with new first and last names
                 updateUser({
                     first_name: firstName,
                     last_name: lastName,
                 });
                 
                 toast.success('Profile updated successfully!');
-                // Update original data
                 setOriginalData({
                     first_name: firstName,
                     last_name: lastName,
@@ -248,7 +233,6 @@ export default function ProfilePage() {
         }
     };
 
-    // Helper functions for dynamic arrays
     const addEducation = () => {
         setEducation([...education, { degree: '', institution: '', year: '', location: '' }]);
     };
@@ -315,7 +299,6 @@ export default function ProfilePage() {
 
     return (
         <div className="min-h-screen bg-[#F5F2E9]">
-            {/* Header */}
             <header className="bg-white border-b sticky top-0 z-40" style={{ borderColor: '#d4c5cb' }}>
                 <div className="container mx-auto px-4 py-4">
                     <div className="flex items-center justify-between">
@@ -352,9 +335,7 @@ export default function ProfilePage() {
                 </div>
             </header>
 
-            {/* Main Content */}
             <div className="container mx-auto px-4 py-8 max-w-4xl">
-                {/* Basic Information */}
                 <Card className="mb-6 border-2" style={{ borderColor: '#d4c5cb' }}>
                     <CardHeader className="pb-3">
                         <CardTitle className="flex items-center gap-2 text-lg" style={{ color: '#64303A' }}>
@@ -397,7 +378,6 @@ export default function ProfilePage() {
                     </CardContent>
                 </Card>
 
-                {/* Birth Information */}
                 <Card className="mb-6 border-2" style={{ borderColor: '#d4c5cb' }}>
                     <CardHeader className="pb-3">
                         <CardTitle className="flex items-center gap-2 text-lg" style={{ color: '#64303A' }}>
@@ -462,7 +442,6 @@ export default function ProfilePage() {
                     </CardContent>
                 </Card>
 
-                {/* Current Location */}
                 <Card className="mb-6 border-2" style={{ borderColor: '#d4c5cb' }}>
                     <CardHeader className="pb-3">
                         <CardTitle className="flex items-center gap-2 text-lg" style={{ color: '#64303A' }}>
@@ -483,7 +462,6 @@ export default function ProfilePage() {
                     </CardContent>
                 </Card>
 
-                {/* Education */}
                 <Card className="mb-6 border-2" style={{ borderColor: '#d4c5cb' }}>
                     <CardHeader className="pb-3">
                         <CardTitle className="flex items-center gap-2 text-lg" style={{ color: '#64303A' }}>
@@ -551,7 +529,6 @@ export default function ProfilePage() {
                     </CardContent>
                 </Card>
 
-                {/* Work History */}
                 <Card className="mb-6 border-2" style={{ borderColor: '#d4c5cb' }}>
                     <CardHeader className="pb-3">
                         <CardTitle className="flex items-center gap-2 text-lg" style={{ color: '#64303A' }}>
@@ -629,7 +606,6 @@ export default function ProfilePage() {
                     </CardContent>
                 </Card>
 
-                {/* Life Events */}
                 <Card className="mb-6 border-2" style={{ borderColor: '#d4c5cb' }}>
                     <CardHeader className="pb-3">
                         <CardTitle className="flex items-center gap-2 text-lg" style={{ color: '#64303A' }}>
@@ -715,7 +691,6 @@ export default function ProfilePage() {
                     </CardContent>
                 </Card>
 
-                {/* Location History */}
                 <Card className="mb-6 border-2" style={{ borderColor: '#d4c5cb' }}>
                     <CardHeader className="pb-3">
                         <CardTitle className="flex items-center gap-2 text-lg" style={{ color: '#64303A' }}>
@@ -801,7 +776,6 @@ export default function ProfilePage() {
                     </CardContent>
                 </Card>
 
-                {/* Save Button (Bottom) */}
                 <div className="flex justify-end">
                     <Button 
                         onClick={handleSave} 

@@ -24,7 +24,6 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        // tree_id is required
         if (!body.tree_id || !body.first_name || !body.last_name) {
             return NextResponse.json({ message: 'Missing required fields' }, { status: 400 });
         }

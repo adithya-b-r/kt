@@ -48,15 +48,13 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
     const [isDragging, setIsDragging] = useState(false);
     const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
-    // Build relationship maps
     const { spouseMap, childrenMap, parentsMap } = useMemo(() => {
-        const spouseMap = new Map<string, string>(); // person -> first spouse (MVP: one spouse)
-        const childrenMap = new Map<string, Set<string>>(); // parent -> children
-        const parentsMap = new Map<string, Set<string>>(); // child -> parents
+        const spouseMap = new Map<string, string>();
+        const childrenMap = new Map<string, Set<string>>();
+        const parentsMap = new Map<string, Set<string>>();
 
         relationships.forEach(rel => {
             if (rel.relationship_type === 'spouse') {
-                // MVP: Only track first spouse
                 if (!spouseMap.has(rel.person1_id)) {
                     spouseMap.set(rel.person1_id, rel.person2_id);
                 }
@@ -79,19 +77,14 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
         return { spouseMap, childrenMap, parentsMap };
     }, [relationships]);
 
-    // Get children that belong to a parent pair, sorted by birth date (oldest first)
-    // MVP: Show children linked to EITHER parent in the couple, but avoid duplicates
     const getChildrenOfCouple = useCallback((personId: string, spouseId: string | undefined): string[] => {
         const personChildren = childrenMap.get(personId) || new Set<string>();
         const spouseChildren = spouseId ? (childrenMap.get(spouseId) || new Set<string>()) : new Set<string>();
 
-        // Combine children from both parents (union)
         const coupleChildrenSet = new Set<string>();
         personChildren.forEach(c => coupleChildrenSet.add(c));
         spouseChildren.forEach(c => coupleChildrenSet.add(c));
 
-        // Filter: only include children whose parents are EXACTLY this couple
-        // (to prevent showing children from other marriages)
         const coupleChildren: string[] = [];
         coupleChildrenSet.forEach(childId => {
             const childParents = parentsMap.get(childId);
@@ -99,22 +92,17 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
 
             const parentIds = Array.from(childParents);
 
-            // Check if child belongs to this couple:
-            // - Child has this person as a parent AND
-            // - Child has NO other parent OR child's other parent is the spouse
             const hasThisPerson = parentIds.includes(personId);
             const hasSpouse = spouseId ? parentIds.includes(spouseId) : false;
             const otherParents = parentIds.filter(p => p !== personId && p !== spouseId);
 
             if (hasThisPerson || hasSpouse) {
-                // Only include if child doesn't have parents from a different marriage
                 if (otherParents.length === 0) {
                     coupleChildren.push(childId);
                 }
             }
         });
 
-        // Sort by birth date (oldest first = left, youngest last = right)
         coupleChildren.sort((a, b) => {
             const memberA = familyMembers.find(m => m.id === a);
             const memberB = familyMembers.find(m => m.id === b);
@@ -122,7 +110,6 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
             const dateA = memberA?.birth_date ? new Date(memberA.birth_date).getTime() : Infinity;
             const dateB = memberB?.birth_date ? new Date(memberB.birth_date).getTime() : Infinity;
 
-            // If no birth date, sort alphabetically by first name as fallback
             if (dateA === Infinity && dateB === Infinity) {
                 const nameA = memberA?.first_name || '';
                 const nameB = memberB?.first_name || '';
@@ -135,7 +122,6 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
         return coupleChildren;
     }, [childrenMap, parentsMap, familyMembers]);
 
-    // Find the topmost ancestor (the real root of the tree)
     const findTopmostAncestor = useCallback((startId: string, visited: Set<string>): string => {
         if (visited.has(startId)) return startId;
         visited.add(startId);
@@ -149,7 +135,6 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
         return findTopmostAncestor(firstParent, visited);
     }, [parentsMap]);
 
-    // Calculate positioned members
     const positionedMembers = useMemo((): PositionedMember[] => {
         if (familyMembers.length === 0) return [];
 
@@ -157,7 +142,6 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
         const visited = new Set<string>();
         const memberIds = new Set(familyMembers.map(m => m.id));
 
-        // Calculate generation level by traversing UP to ancestors
         const getGenerationLevel = (memberId: string, seen: Set<string>): number => {
             if (seen.has(memberId)) return 0;
             seen.add(memberId);
@@ -166,7 +150,6 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
             const validParents = parents ? Array.from(parents).filter(p => memberIds.has(p)) : [];
 
             if (validParents.length === 0) {
-                // Check if spouse has parents
                 const spouseId = spouseMap.get(memberId);
                 if (spouseId && !seen.has(spouseId) && memberIds.has(spouseId)) {
                     const spouseParents = parentsMap.get(spouseId);
@@ -181,13 +164,11 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
             return getGenerationLevel(validParents[0], new Set(seen)) + 1;
         };
 
-        // Calculate generations for all members
         const generations = new Map<string, number>();
         familyMembers.forEach(member => {
             generations.set(member.id, getGenerationLevel(member.id, new Set()));
         });
 
-        // Group members by generation
         const generationGroups = new Map<number, string[]>();
         generations.forEach((gen, memberId) => {
             if (!generationGroups.has(gen)) {
@@ -196,10 +177,8 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
             generationGroups.get(gen)!.push(memberId);
         });
 
-        // Find all root ancestors (generation 0)
         const rootAncestors = generationGroups.get(0) || [];
 
-        // Calculate subtree width
         const calculateSubtreeWidth = (personId: string, visitedCalc: Set<string>): number => {
             if (visitedCalc.has(personId) || !memberIds.has(personId)) return 0;
             visitedCalc.add(personId);
@@ -227,7 +206,6 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
             return Math.max(parentWidth, totalChildWidth);
         };
 
-        // Position a single person and their descendants
         const positionPerson = (personId: string, startX: number, y: number): number => {
             if (visited.has(personId) || !memberIds.has(personId)) return startX;
 
@@ -247,7 +225,6 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
             const children = getChildrenOfCouple(personId, spouseId).filter(c => memberIds.has(c));
             const unvisitedChildren = children.filter(c => !visited.has(c));
 
-            // Calculate total width needed for children
             let totalChildrenWidth = 0;
             const childWidths: number[] = [];
 
@@ -284,7 +261,6 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
                 });
             }
 
-            // Position children below
             if (unvisitedChildren.length > 0) {
                 const childrenStartX = startX + (subtreeWidth - totalChildrenWidth) / 2;
                 let currentX = childrenStartX;
@@ -298,7 +274,6 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
             return startX + subtreeWidth;
         };
 
-        // Position all root ancestors at the top
         let currentX = 100;
         rootAncestors.forEach(rootId => {
             if (!visited.has(rootId)) {
@@ -308,7 +283,6 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
             }
         });
 
-        // Position any remaining unvisited members
         const maxY = positioned.length > 0 ? Math.max(...positioned.map(p => p.y)) : 60;
 
         familyMembers.forEach(member => {
@@ -328,14 +302,12 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
         return positioned;
     }, [familyMembers, spouseMap, parentsMap, getChildrenOfCouple]);
 
-    // Calculate connection lines
     const connectionElements = useMemo(() => {
         const elements: React.JSX.Element[] = [];
         const memberPositions = new Map(positionedMembers.map(pm => [pm.member.id, pm]));
         const processedSpouses = new Set<string>();
         const processedChildren = new Set<string>();
 
-        // Draw spouse connections and grouped parent-child lines for couples
         relationships.forEach((rel, idx) => {
             if (rel.relationship_type !== 'spouse') return;
 
@@ -394,7 +366,6 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
                 </g>
             );
 
-            // Group children under this couple
             const children = getChildrenOfCouple(rel.person1_id, rel.person2_id)
                 .map(childId => memberPositions.get(childId))
                 .filter((child): child is PositionedMember => !!child);
@@ -445,7 +416,6 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
             }
         });
 
-        // Draw remaining parent-child lines for single-parent cases
         relationships.forEach((rel, idx) => {
             if (rel.relationship_type !== 'parent_child') return;
             if (processedChildren.has(rel.person2_id)) return;
@@ -496,12 +466,9 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
         return elements;
     }, [positionedMembers, relationships, getChildrenOfCouple]);
 
-    // Handle Export logic exposed via ref
     React.useImperativeHandle(ref, () => ({
         getExportData: async (options) => {
             if (!contentRef.current) throw new Error('Tree content not found');
-
-            // 1. Calculate bounding box of the entire tree
             if (positionedMembers.length === 0) {
                 return { dataUrl: '', width: 0, height: 0 };
             }
@@ -512,13 +479,10 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
             const maxY = Math.max(...positionedMembers.map(pm => pm.y + CARD_HEIGHT));
 
             const PADDING = 50;
-            const SCALE = options?.scale || 1; // Default to 1 if not specified
+            const SCALE = options?.scale || 1;
             const width = (maxX - minX) * SCALE + (PADDING * 2);
             const height = (maxY - minY) * SCALE + (PADDING * 2);
 
-            // 2. Generate the image with specific style overrides to force centering and full size
-            // We use matrix transform to reliably scale and translate: x' = x*S + tx
-            // tx = PADDING - minX * S
             const tx = PADDING - minX * SCALE;
             const ty = PADDING - minY * SCALE;
 
@@ -527,9 +491,8 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
                 backgroundColor: '#F5F2E9',
                 width: width,
                 height: height,
-                pixelRatio: 3, // Higher pixel ratio for better clarity
+                pixelRatio: 3,
                 style: {
-                    // Ignore current zoom/pan transform and apply export scale
                     transform: `matrix(${SCALE}, 0, 0, ${SCALE}, ${tx}, ${ty})`,
                     transformOrigin: 'top left',
                     width: `${width}px`,
@@ -541,7 +504,6 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
         }
     }));
 
-    // Pan handlers
     const handleMouseDown = useCallback((e: React.MouseEvent) => {
         const target = e.target as HTMLElement;
         if (target.closest('[data-member-card]') || target.closest('button')) return;
@@ -593,7 +555,6 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
         setPan({ x: 0, y: 0 });
     };
 
-    // Center the tree based on positioned members
     const handleCenter = useCallback(() => {
         if (positionedMembers.length === 0) return;
 
@@ -608,7 +569,6 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
         const containerWidth = containerRef.current?.clientWidth || 800;
         const containerHeight = containerRef.current?.clientHeight || 600;
 
-        // Calculate center position
         const centerX = (containerWidth - treeWidth * zoom) / 2 - minX * zoom;
         const centerY = (containerHeight - treeHeight * zoom) / 2 - minY * zoom;
 
@@ -617,7 +577,6 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
 
     return (
         <Card className="h-175 relative overflow-hidden border-2 border-border/50 shadow-lg">
-            {/* Toolbar */}
             <div className="absolute top-4 left-4 z-30 flex items-center gap-1 bg-card/95 backdrop-blur-md rounded-xl p-1.5 shadow-lg border border-border/50">
                 <Button size="sm" variant="ghost" onClick={handleZoomOut} className="h-8 w-8 p-0 hover:bg-muted">
                     <ZoomOut className="h-4 w-4" />
@@ -640,13 +599,11 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
                 </Button>
             </div>
 
-            {/* Hint */}
             <div className="absolute bottom-4 left-4 z-30 text-xs text-muted-foreground bg-card/90 backdrop-blur-sm px-3 py-2 rounded-lg flex items-center gap-2 shadow border border-border/30">
                 <Move className="h-3.5 w-3.5" />
                 <span>Drag or swipe to pan • Hover cards for quick actions</span>
             </div>
 
-            {/* Canvas */}
             <CardContent
                 ref={containerRef}
                 className="p-0 h-full cursor-grab active:cursor-grabbing relative overflow-hidden touch-none"
@@ -662,7 +619,6 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
                 onTouchEnd={handleTouchEnd}
                 onTouchCancel={handleTouchEnd}
             >
-                {/* Subtle grid pattern */}
                 <div
                     className="absolute inset-0 opacity-[0.03] pointer-events-none"
                     style={{
@@ -696,12 +652,10 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
                             transformOrigin: 'center center',
                         }}
                     >
-                        {/* Connection Lines */}
                         <svg className="absolute inset-0 pointer-events-none" style={{ width: '4000px', height: '3000px' }}>
                             {connectionElements}
                         </svg>
 
-                        {/* Member Cards */}
                         {positionedMembers.map((pm) => (
                             <div
                                 key={pm.member.id}

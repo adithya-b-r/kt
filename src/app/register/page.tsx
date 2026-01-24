@@ -43,14 +43,12 @@ const Register = () => {
       return;
     }
 
-    // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       toast.error("Please enter a valid email address");
       return;
     }
 
-    // Phone validation (if provided)
     if (phone) {
       const sanitizedPhone = phone.replace(/[\s()-]/g, '');
       const digitsOnly = sanitizedPhone.replace(/^\+/, '');

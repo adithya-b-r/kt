@@ -54,13 +54,11 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
     const [isAddingRelationship, setIsAddingRelationship] = useState(false);
     const [isCreatingMember, setIsCreatingMember] = useState(false);
 
-    // For contextual add (parent/spouse/child)
     const [addContext, setAddContext] = useState<{
         relationType?: 'parent' | 'spouse' | 'child';
         relatedTo?: FamilyMember;
     }>({});
 
-    // MVP: Only essential fields
     const [newMemberData, setNewMemberData] = useState({
         first_name: '',
         last_name: '',
@@ -116,7 +114,6 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
             return;
         }
 
-        // Check free limit
         if (familyMembers.length >= 25) {
             toast.error('Free plan limit reached (25 members). Premium coming soon!');
             return;
@@ -126,7 +123,6 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
             setIsCreatingMember(true);
             const newMember = await addFamilyMember(newMemberData);
 
-            // If adding with context (parent/spouse/child), create the relationship
             if (addContext.relationType && addContext.relatedTo && newMember) {
                 let person1_id: string, person2_id: string, relationship_type: string;
 
@@ -141,7 +137,6 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
                         person2_id = newMember.id;
                         relationship_type = 'parent_child';
 
-                        // Check if the parent (relatedTo) has a spouse
                         const spouseRel = relationships.find(r =>
                             r.relationship_type === 'spouse' &&
                             (r.person1_id === addContext.relatedTo!.id || r.person2_id === addContext.relatedTo!.id)
@@ -149,8 +144,6 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
 
                         if (spouseRel) {
                             const spouseId = spouseRel.person1_id === addContext.relatedTo.id ? spouseRel.person2_id : spouseRel.person1_id;
-                            // Add relationship with spouse too
-                            // We do this immediately after the first one
                             setTimeout(() => {
                                 addRelationship({
                                     person1_id: spouseId,
@@ -161,7 +154,6 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
                         }
                         break;
                     case 'spouse':
-                        // Validate that both parents are not of the same gender
                         if (newMemberData.gender && addContext.relatedTo.gender &&
                             newMemberData.gender === addContext.relatedTo.gender) {
                             toast.error('Both parents cannot be of the same gender');
@@ -203,12 +195,8 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
     const handleOpenAddMember = (relationType?: 'parent' | 'spouse' | 'child' | null, relatedTo?: FamilyMember | null) => {
         setAddContext({ relationType: relationType || undefined, relatedTo: relatedTo || undefined });
 
-        // Pre-fill last name from the related person if adding child or sibling (assuming same family name)
-        // For spouse, we usually don't assume, but could.
         let initialLastName = '';
         if (relatedTo && (relationType === 'child' || relationType === 'spouse')) {
-            // Note: Spouse might keep maiden name, but often shares name. Child definitely does usually.
-            // Let's just do it for Child for now as that's the explicit request "Add Child of John Doe".
             if (relationType === 'child') {
                 initialLastName = relatedTo.last_name;
             }
@@ -254,7 +242,6 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
         try {
             const { dataUrl } = await treeRef.current.getExportData();
 
-            // Create a temporary link element to trigger download
             const link = document.createElement('a');
             link.href = dataUrl;
             link.download = `${familyTree?.name || 'My_Family_Tree'}.png`;
@@ -355,7 +342,6 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
 
     return (
         <div className="min-h-screen" style={{ backgroundColor: '#F5F2E9' }}>
-            {/* Header */}
             <header className="bg-white border-b sticky top-0 z-40" style={{ borderColor: '#d4c5cb' }}>
                 <div className="container mx-auto px-4 py-3">
                     <div className="flex items-center justify-between">
@@ -419,7 +405,6 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
                 </div>
             </header>
 
-            {/* Main Content */}
             <div className="container mx-auto px-4 py-6">
                 <TreeVisualization
                     familyMembers={familyMembers}
@@ -431,7 +416,6 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
                 />
             </div>
 
-            {/* Member Detail Panel */}
             <MemberDetailPanel
                 member={selectedMember}
                 parents={selectedParents}
@@ -446,7 +430,6 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
                 }}
             />
 
-            {/* Add Member Dialog */}
             <Dialog open={isAddingMember} onOpenChange={setIsAddingMember}>
                 <DialogContent className="max-w-md">
                     <DialogHeader>
@@ -519,7 +502,6 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
 
                         <Separator />
 
-                        {/* Coming Soon Section */}
                         <Collapsible>
                             <CollapsibleTrigger asChild>
                                 <Button variant="ghost" className="w-full justify-between text-muted-foreground p-2">
@@ -546,7 +528,6 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
                             </CollapsibleContent>
                         </Collapsible>
 
-                        {/* Gender Conflict Warning */}
                         {spouseGenderConflict && (
                             <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-2">
                                 <div className="shrink-0 pt-0.5">
@@ -582,7 +563,6 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
                 </DialogContent>
             </Dialog>
 
-            {/* Add Relationship Dialog */}
             <AddRelationshipDialog
                 open={isAddingRelationship}
                 onOpenChange={setIsAddingRelationship}

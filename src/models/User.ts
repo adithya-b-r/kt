@@ -1,6 +1,5 @@
 import mongoose, { Schema, Model } from 'mongoose';
 
-// Life event structure for timeline/story generation
 export interface ILifeEvent {
     year: number;
     event_type: 'education' | 'work' | 'travel' | 'milestone' | 'other';
@@ -9,7 +8,6 @@ export interface ILifeEvent {
     location?: string;
 }
 
-// Travel/movement history
 export interface ILocationHistory {
     year: number;
     location: string;
@@ -29,7 +27,6 @@ export interface IUser {
     password_hash: string;
     phone?: string;
     
-    // Profile fields for AI Story Generation (Module A)
     date_of_birth?: Date;
     place_of_birth?: string;
     birth_city?: string;
@@ -37,7 +34,6 @@ export interface IUser {
     birth_country?: string;
     current_location?: string;
     
-    // Education
     education?: Array<{
         degree?: string;
         institution?: string;
@@ -45,7 +41,7 @@ export interface IUser {
         location?: string;
     }>;
     
-    // Work history
+
     work_history?: Array<{
         company?: string;
         position?: string;
@@ -54,16 +50,13 @@ export interface IUser {
         location?: string;
     }>;
     
-    // Life events for story generation
+
     life_events?: ILifeEvent[];
     
-    // Travel/movement history for maps
     location_history?: ILocationHistory[];
     
-    // Profile completion status
     profile_completed?: boolean;
 
-    // Generated story cache
     generated_story?: string;
     story_generated_at?: Date;
     
@@ -97,7 +90,6 @@ const UserSchema = new Schema<IUser>({
     password_hash: { type: String, required: true },
     phone: { type: String },
     
-    // Profile fields
     date_of_birth: { type: Date },
     place_of_birth: { type: String },
     birth_city: { type: String },
@@ -132,7 +124,6 @@ const UserSchema = new Schema<IUser>({
     updated_at: { type: Date, default: Date.now },
 });
 
-// Prevent model recompilation error in Next.js
 const User: Model<IUser> = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
 
 export default User;

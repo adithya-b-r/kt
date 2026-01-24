@@ -49,7 +49,6 @@ const Login = () => {
   return (
     <div className="min-h-screen bg-[#F5F2E9] flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Back to home */}
         <Link href="/" className="inline-flex items-center gap-2 text-sm text-gray-600 mb-6 transition-colors">
           <ArrowLeft className="h-4 w-4" />
           Back to KutumbaTree
@@ -65,7 +64,6 @@ const Login = () => {
 
           <CardContent className="space-y-6">
             <form onSubmit={handleSubmit}>
-              {/* Email/Phone Login */}
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="email">Email</Label>
@@ -131,7 +129,6 @@ const Login = () => {
               </div>
             </div>
 
-            {/* Social Login */}
             <div className="space-y-3">
               <Button className="w-full border hover:bg-teal-600 hover:text-white" style={{ borderColor: '#d4c5cb' }}>
                 <Mail className="h-4 w-4 mr-2" />

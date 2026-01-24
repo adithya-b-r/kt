@@ -38,7 +38,6 @@ export const useFamilyTree = (treeId: string) => {
             if (!res.ok) throw new Error('Failed to fetch tree');
             const data = await res.json();
 
-            // Map MongoDB _id to id
             setFamilyTree({ id: data.tree._id, name: data.tree.name });
             setFamilyMembers(data.members.map((m: any) => ({
                 id: m._id,
@@ -125,7 +124,6 @@ export const useFamilyTree = (treeId: string) => {
             if (!res.ok) throw new Error('Failed to delete member');
 
             setFamilyMembers((prev) => prev.filter((member) => member.id !== id));
-            // Also remove relationships involving this member locally to update UI immediately
             setRelationships(prev => prev.filter(r => r.person1_id !== id && r.person2_id !== id));
 
             toast.success('Member deleted');
@@ -136,7 +134,6 @@ export const useFamilyTree = (treeId: string) => {
     }, []);
 
     const addRelationship = useCallback(async (data: Omit<Relationship, 'id'>) => {
-        // Validation: Check for duplicates locally first
         const exists = relationships.some(rel =>
             (rel.person1_id === data.person1_id && rel.person2_id === data.person2_id && rel.relationship_type === data.relationship_type) ||
             (data.relationship_type === 'spouse' && rel.person1_id === data.person2_id && rel.person2_id === data.person1_id && rel.relationship_type === 'spouse')

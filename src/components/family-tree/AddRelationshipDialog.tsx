@@ -22,7 +22,6 @@ interface AddRelationshipDialogProps {
     }) => Promise<void>;
 }
 
-// Simplified relationship types for MVP
 const relationshipTypes = [
     { value: 'parent_of', label: 'Parent of' },
     { value: 'child_of', label: 'Child of' },
@@ -54,7 +53,6 @@ export const AddRelationshipDialog: React.FC<AddRelationshipDialogProps> = ({
         let finalPerson2 = relationshipData.person2_id;
         let finalType = relationshipData.relationship_type;
 
-        // Validate spouse relationship - both parents cannot be of same gender
         if (relationshipData.relationship_type === 'spouse') {
             const person1 = familyMembers.find(m => m.id === relationshipData.person1_id);
             const person2 = familyMembers.find(m => m.id === relationshipData.person2_id);
@@ -67,11 +65,8 @@ export const AddRelationshipDialog: React.FC<AddRelationshipDialogProps> = ({
 
         if (relationshipData.relationship_type === 'parent_of') {
             finalType = 'parent_child';
-            // Person 1 is parent, Person 2 is child. Correct order for parent_child type usually depends on schema.
-            // Assuming parent_child means person1 is parent of person2.
         } else if (relationshipData.relationship_type === 'child_of') {
             finalType = 'parent_child';
-            // Person 1 is child of Person 2. So we swap them so Person 1 (param) is always the parent.
             finalPerson1 = relationshipData.person2_id;
             finalPerson2 = relationshipData.person1_id;
         }
@@ -84,7 +79,6 @@ export const AddRelationshipDialog: React.FC<AddRelationshipDialogProps> = ({
                 relationship_type: finalType,
             });
 
-            // Reset form
             setRelationshipData({
                 person1_id: selectedMember?.id || '',
                 person2_id: '',
@@ -99,7 +93,6 @@ export const AddRelationshipDialog: React.FC<AddRelationshipDialogProps> = ({
         }
     };
 
-    // Filter out the selected member from the second person dropdown
     const availableMembers = familyMembers.filter(member => member.id !== relationshipData.person1_id);
 
     return (

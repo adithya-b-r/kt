@@ -16,16 +16,13 @@ export async function GET(
 
         await connectToDatabase();
 
-        // Fetch tree metadata
         const tree = await FamilyTree.findById(treeId);
         if (!tree) {
             return NextResponse.json({ message: 'Family tree not found' }, { status: 404 });
         }
 
-        // Fetch all members
         const members = await Member.find({ tree_id: treeId });
 
-        // Fetch all relationships
         const relationships = await Relationship.find({ tree_id: treeId });
 
         return NextResponse.json({
