@@ -343,61 +343,57 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
     return (
         <div className="min-h-screen" style={{ backgroundColor: '#F5F2E9' }}>
             <header className="bg-white border-b sticky top-0 z-40" style={{ borderColor: '#d4c5cb' }}>
-                <div className="container mx-auto px-4 py-3">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
+                <div className="container mx-auto px-3 sm:px-4 py-3">
+                    <div className="flex items-center justify-between gap-2 sm:gap-4 flex-wrap">
+                        <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
                             <Link href="/dashboard">
-                                <Button variant="ghost" size="sm">
-                                    <ArrowLeft className="h-4 w-4 mr-2" />
-                                    Dashboard
+                                <Button variant="ghost" size="sm" className="h-8 w-8 sm:h-auto sm:w-auto p-0 sm:px-3">
+                                    <ArrowLeft className="h-4 w-4" />
+                                    <span className="hidden sm:inline ml-2">Dashboard</span>
                                 </Button>
                             </Link>
-                            <div>
-                                <h1 className="text-xl font-bold" style={{ color: '#64303A' }}>{familyTree.name}</h1>
-                                <p className="text-sm text-gray-600">
+                            <div className="min-w-0 flex-1">
+                                <h1 className="text-base sm:text-xl font-bold truncate" style={{ color: '#64303A' }}>{familyTree.name}</h1>
+                                <p className="text-xs sm:text-sm text-gray-600 truncate">
                                     {familyMembers.length}/25 members
                                 </p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <div className="relative">
-                                <Button variant="outline" size="sm" onClick={handleShare}>
-                                    <Share2 className="h-4 w-4 mr-2" />
-                                    Share
-                                </Button>
-                            </div>
+                        <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-end">
+                            <Button variant="outline" size="sm" onClick={handleShare} className="text-xs sm:text-sm h-8 sm:h-auto px-2 sm:px-3">
+                                <Share2 className="h-3 w-3 sm:h-4 sm:w-4" />
+                                <span className="hidden sm:inline ml-1 sm:ml-2">Share</span>
+                            </Button>
 
-                            <div className="relative">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="outline" size="sm">
-                                            <Download className="h-4 w-4 mr-2" />
-                                            Export
-                                            <ChevronDown className="h-3 w-3 ml-2 opacity-50" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="w-56">
-                                        <DropdownMenuItem onClick={handleExportPDF} className="cursor-pointer">
-                                            <FileText className="h-4 w-4 mr-2" />
-                                            Download as PDF
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={handleExportImage} className="cursor-pointer">
-                                            <ImageIcon className="h-4 w-4 mr-2" />
-                                            Download as Image
-                                        </DropdownMenuItem>
-                                        <Separator className="my-1" />
-                                        <DropdownMenuItem onClick={handleHomeDelivery} className="cursor-pointer">
-                                            <Truck className="h-4 w-4 mr-2" />
-                                            Home Delivery
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </div>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" size="sm" className="text-xs sm:text-sm h-8 sm:h-auto px-2 sm:px-3">
+                                        <Download className="h-3 w-3 sm:h-4 sm:w-4" />
+                                        <span className="hidden sm:inline ml-1 sm:ml-2">Export</span>
+                                        <ChevronDown className="h-2 w-2 sm:h-3 sm:w-3 ml-1 opacity-50" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-48 sm:w-56">
+                                    <DropdownMenuItem onClick={handleExportPDF} className="cursor-pointer text-xs sm:text-sm">
+                                        <FileText className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                                        Download as PDF
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={handleExportImage} className="cursor-pointer text-xs sm:text-sm">
+                                        <ImageIcon className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                                        Download as Image
+                                    </DropdownMenuItem>
+                                    <Separator className="my-1" />
+                                    <DropdownMenuItem onClick={handleHomeDelivery} className="cursor-pointer text-xs sm:text-sm">
+                                        <Truck className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                                        Home Delivery
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
 
                             <Link href="/profile">
-                                <Button variant="outline" size="sm">
-                                    <User className="h-4 w-4 mr-2" />
-                                    Profile
+                                <Button variant="outline" size="sm" className="text-xs sm:text-sm h-8 sm:h-auto px-2 sm:px-3">
+                                    <User className="h-3 w-3 sm:h-4 sm:w-4" />
+                                    <span className="hidden sm:inline ml-1 sm:ml-2">Profile</span>
                                 </Button>
                             </Link>
                         </div>
@@ -405,7 +401,7 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
                 </div>
             </header>
 
-            <div className="container mx-auto px-4 py-6">
+            <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-6 w-full">
                 <TreeVisualization
                     familyMembers={familyMembers}
                     relationships={relationships}
@@ -431,43 +427,43 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
             />
 
             <Dialog open={isAddingMember} onOpenChange={setIsAddingMember}>
-                <DialogContent className="max-w-md">
+                <DialogContent className="max-w-md w-[95vw] sm:w-full max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
-                        <DialogTitle>{getAddDialogTitle()}</DialogTitle>
+                        <DialogTitle className="text-base sm:text-lg">{getAddDialogTitle()}</DialogTitle>
                     </DialogHeader>
-                    <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-3 sm:space-y-4 text-sm sm:text-base">
+                        <div className="grid grid-cols-2 gap-2 sm:gap-4">
                             <div>
-                                <Label htmlFor="first_name">First Name *</Label>
+                                <Label htmlFor="first_name" className="text-xs sm:text-sm">First Name *</Label>
                                 <Input
                                     id="first_name"
                                     value={newMemberData.first_name}
                                     onChange={(e) => setNewMemberData(prev => ({ ...prev, first_name: e.target.value }))}
-                                    placeholder="Enter first name"
-                                    className="focus-visible:outline-none ring-transparent focus-visible:ring-0 focus-visible:border-orange-900"
+                                    placeholder="First name"
+                                    className="focus-visible:outline-none ring-transparent focus-visible:ring-0 focus-visible:border-orange-900 text-xs sm:text-sm"
                                     maxLength={50}
                                 />
                             </div>
                             <div>
-                                <Label htmlFor="last_name">Last Name *</Label>
+                                <Label htmlFor="last_name" className="text-xs sm:text-sm">Last Name *</Label>
                                 <Input
                                     id="last_name"
                                     value={newMemberData.last_name}
                                     onChange={(e) => setNewMemberData(prev => ({ ...prev, last_name: e.target.value }))}
-                                    placeholder="Enter last name"
-                                    className="focus-visible:outline-none ring-transparent focus-visible:ring-0 focus-visible:border-orange-900"
+                                    placeholder="Last name"
+                                    className="focus-visible:outline-none ring-transparent focus-visible:ring-0 focus-visible:border-orange-900 text-xs sm:text-sm"
                                     maxLength={50}
                                 />
                             </div>
                         </div>
 
                         <div>
-                            <Label htmlFor="gender">Gender</Label>
+                            <Label htmlFor="gender" className="text-xs sm:text-sm">Gender</Label>
                             <Select
                                 value={newMemberData.gender}
                                 onValueChange={(value) => setNewMemberData(prev => ({ ...prev, gender: value }))}
                             >
-                                <SelectTrigger>
+                                <SelectTrigger className="text-xs sm:text-sm">
                                     <SelectValue placeholder="Select gender" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -479,24 +475,24 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
                         </div>
 
                         <div>
-                            <Label htmlFor="birth_date">Date of Birth</Label>
+                            <Label htmlFor="birth_date" className="text-xs sm:text-sm">Date of Birth</Label>
                             <Input
                                 id="birth_date"
                                 type="date"
                                 value={newMemberData.birth_date}
                                 onChange={(e) => setNewMemberData(prev => ({ ...prev, birth_date: e.target.value }))}
-                                className="focus-visible:outline-none ring-transparent focus-visible:ring-0 focus-visible:border-orange-900"
+                                className="focus-visible:outline-none ring-transparent focus-visible:ring-0 focus-visible:border-orange-900 text-xs sm:text-sm"
                             />
                         </div>
 
                         <div>
-                            <Label htmlFor="death_date" className="text-muted-foreground">Death Date (if deceased)</Label>
+                            <Label htmlFor="death_date" className="text-muted-foreground text-xs sm:text-sm">Death Date (if deceased)</Label>
                             <Input
                                 id="death_date"
                                 type="date"
                                 value={newMemberData.death_date}
                                 onChange={(e) => setNewMemberData(prev => ({ ...prev, death_date: e.target.value }))}
-                                className="focus-visible:outline-none ring-transparent focus-visible:ring-0 focus-visible:border-orange-900"
+                                className="focus-visible:outline-none ring-transparent focus-visible:ring-0 focus-visible:border-orange-900 text-xs sm:text-sm"
                             />
                         </div>
 
@@ -504,19 +500,19 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
 
                         <Collapsible>
                             <CollapsibleTrigger asChild>
-                                <Button variant="ghost" className="w-full justify-between text-muted-foreground p-2">
-                                    <span className="flex items-center gap-2 text-sm">
-                                        <Lock className="h-4 w-4" />
+                                <Button variant="ghost" className="w-full justify-between text-muted-foreground p-2 text-xs sm:text-sm">
+                                    <span className="flex items-center gap-2">
+                                        <Lock className="h-3 w-3 sm:h-4 sm:w-4" />
                                         Cultural & Life Details
                                     </span>
                                     <div className="flex items-center gap-2">
                                         <Badge variant="secondary" className="text-xs">Coming Soon</Badge>
-                                        <ChevronDown className="h-4 w-4" />
+                                        <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4" />
                                     </div>
                                 </Button>
                             </CollapsibleTrigger>
                             <CollapsibleContent>
-                                <div className="p-3 bg-muted/30 rounded-lg mt-1 text-sm text-muted-foreground">
+                                <div className="p-2 sm:p-3 bg-muted/30 rounded-lg mt-1 text-xs text-muted-foreground">
                                     <p className="mb-2">Available in Heritage Explorer:</p>
                                     <ul className="list-disc list-inside space-y-0.5 text-xs">
                                         <li>Birth & Death Places</li>
@@ -529,14 +525,14 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
                         </Collapsible>
 
                         {spouseGenderConflict && (
-                            <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-2">
+                            <div className="p-2 sm:p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-2 text-xs sm:text-sm">
                                 <div className="shrink-0 pt-0.5">
-                                    <svg className="h-5 w-5 text-amber-600" viewBox="0 0 20 20" fill="currentColor">
+                                    <svg className="h-4 w-4 sm:h-5 sm:w-5 text-amber-600" viewBox="0 0 20 20" fill="currentColor">
                                         <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                                     </svg>
                                 </div>
                                 <div>
-                                    <p className="text-sm font-medium text-amber-800">Gender Conflict</p>
+                                    <p className="text-xs sm:text-sm font-medium text-amber-800">Gender Conflict</p>
                                     <p className="text-xs text-amber-700 mt-0.5">Both parents cannot be of the same gender. Please select a different gender.</p>
                                 </div>
                             </div>
@@ -545,17 +541,17 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
                         <div className="flex gap-2 pt-2">
                             <Button
                                 onClick={handleAddMember}
-                                className="flex-1 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="flex-1 text-white disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm"
                                 style={{ backgroundColor: '#64303A' }}
                                 disabled={spouseGenderConflict || isCreatingMember}
                             >
-                                <Plus className="h-4 w-4 mr-2" />
-                                {isCreatingMember ? 'Adding...' : 'Add Member'}
+                                <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                                {isCreatingMember ? 'Adding...' : 'Add'}
                             </Button>
                             <Button variant="outline" onClick={() => {
                                 setIsAddingMember(false);
                                 setAddContext({});
-                            }}>
+                            }} className="text-xs sm:text-sm">
                                 Cancel
                             </Button>
                         </div>

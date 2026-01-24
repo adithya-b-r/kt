@@ -387,7 +387,7 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
                                 </Button>
 
                                 {!member.is_root && (
-                                    <Button variant="destructive" className="w-full" onClick={handleDelete}>
+                                    <Button variant="destructive" className="w-full text-white bg-red-600 hover:bg-red-700" onClick={handleDelete}>
                                         <Trash2 className="h-4 w-4 mr-2" />
                                         Delete Member
                                     </Button>

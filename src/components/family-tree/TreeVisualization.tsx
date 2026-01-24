@@ -576,31 +576,32 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
     }, [positionedMembers, zoom]);
 
     return (
-        <Card className="h-175 relative overflow-hidden border-2 border-border/50 shadow-lg">
-            <div className="absolute top-4 left-4 z-30 flex items-center gap-1 bg-card/95 backdrop-blur-md rounded-xl p-1.5 shadow-lg border border-border/50">
-                <Button size="sm" variant="ghost" onClick={handleZoomOut} className="h-8 w-8 p-0 hover:bg-muted">
-                    <ZoomOut className="h-4 w-4" />
+        <Card className="relative overflow-hidden border-2 border-border/50 shadow-lg h-[60vh] sm:h-[75vh] md:h-[85vh]">
+            <div className="absolute top-2 sm:top-4 left-2 sm:left-4 z-30 flex items-center gap-0.5 sm:gap-1 bg-card/95 backdrop-blur-md rounded-xl p-1 sm:p-1.5 shadow-lg border border-border/50 flex-wrap max-w-[calc(100%-1rem)]">
+                <Button size="sm" variant="ghost" onClick={handleZoomOut} className="h-7 w-7 sm:h-8 sm:w-8 p-0 hover:bg-muted" title="Zoom out">
+                    <ZoomOut className="h-3 w-3 sm:h-4 sm:w-4" />
                 </Button>
-                <span className="text-xs font-semibold min-w-11.25 text-center text-muted-foreground">{Math.round(zoom * 100)}%</span>
-                <Button size="sm" variant="ghost" onClick={handleZoomIn} className="h-8 w-8 p-0 hover:bg-muted">
-                    <ZoomIn className="h-4 w-4" />
+                <span className="text-xs font-semibold min-w-9 sm:min-w-11 text-center text-muted-foreground">{Math.round(zoom * 100)}%</span>
+                <Button size="sm" variant="ghost" onClick={handleZoomIn} className="h-7 w-7 sm:h-8 sm:w-8 p-0 hover:bg-muted" title="Zoom in">
+                    <ZoomIn className="h-3 w-3 sm:h-4 sm:w-4" />
                 </Button>
-                <div className="w-px h-5 bg-border mx-1" />
-                <Button size="sm" variant="ghost" onClick={handleReset} className="h-8 w-8 p-0 hover:bg-muted">
-                    <RotateCcw className="h-4 w-4" />
+                <div className="w-px h-4 sm:h-5 bg-border mx-0.5 sm:mx-1" />
+                <Button size="sm" variant="ghost" onClick={handleReset} className="h-7 w-7 sm:h-8 sm:w-8 p-0 hover:bg-muted" title="Reset zoom">
+                    <RotateCcw className="h-3 w-3 sm:h-4 sm:w-4" />
                 </Button>
-                <Button size="sm" variant="ghost" onClick={handleCenter} className="h-8 w-8 p-0 hover:bg-muted" title="Center Tree">
-                    <Crosshair className="h-4 w-4" />
+                <Button size="sm" variant="ghost" onClick={handleCenter} className="h-7 w-7 sm:h-8 sm:w-8 p-0 hover:bg-muted" title="Center Tree">
+                    <Crosshair className="h-3 w-3 sm:h-4 sm:w-4" />
                 </Button>
-                <div className="w-px h-5 bg-border mx-1" />
-                <Button size="sm" onClick={() => onAddMember()} className="h-8 px-3 gap-1.5 font-medium">
-                    <Plus className="h-4 w-4" />
-                    Add Member
+                <div className="w-px h-4 sm:h-5 bg-border mx-0.5 sm:mx-1" />
+                <Button size="sm" onClick={() => onAddMember()} className="h-7 sm:h-8 px-2 sm:px-3 gap-1 text-xs sm:text-sm font-medium">
+                    <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="hidden sm:inline">Add Member</span>
+                    <span className="sm:hidden">Add</span>
                 </Button>
             </div>
 
-            <div className="absolute bottom-4 left-4 z-30 text-xs text-muted-foreground bg-card/90 backdrop-blur-sm px-3 py-2 rounded-lg flex items-center gap-2 shadow border border-border/30">
-                <Move className="h-3.5 w-3.5" />
+            <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 z-30 text-xs text-muted-foreground bg-card/90 backdrop-blur-sm px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg items-center gap-1 sm:gap-2 shadow border border-border/30 hidden sm:flex\">
+                <Move className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                 <span>Drag or swipe to pan • Hover cards for quick actions</span>
             </div>
 
