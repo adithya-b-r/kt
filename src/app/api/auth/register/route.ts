@@ -5,7 +5,7 @@ import connectToDatabase from '@/lib/db';
 import User from '@/models/User';
 import FamilyTree from '@/models/FamilyTree';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this';
+const JWT_SECRET = process.env.JWT_SECRET!;
 
 export async function POST(request: Request) {
     try {
