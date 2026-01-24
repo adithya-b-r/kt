@@ -12,7 +12,7 @@ interface LeftSectionProps {
 
 const LeftSection = ({ familyTree, familyMembers, loading, onCreateTree }: LeftSectionProps) => {
   return (
-    <div className="lg:col-span-8 space-y-8">
+    <div className="lg:col-span-8 space-y-4 sm:space-y-8">
       <QuickActions familyTree={familyTree} />
       <Phase2Features />
       <FamilyTreeHero 

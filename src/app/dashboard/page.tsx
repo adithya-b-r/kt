@@ -105,8 +105,8 @@ const Dashboard = () => {
     <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100">
       <DashboardHeader />
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-12 gap-8">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-7xl">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-8">
           <LeftSection
             familyTree={activeTree}
             familyMembers={familyMembers}

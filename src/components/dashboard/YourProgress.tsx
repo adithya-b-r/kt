@@ -10,25 +10,25 @@ const YourProgress = ({ familyMembersCount }: YourProgressProps) => {
 
   return (
     <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
-      <div className="border-b border-gray-200 px-6 py-4">
-        <h3 className="flex items-center gap-2 text-lg font-semibold">
-          <Clock className="h-5 w-5" />
+      <div className="border-b border-gray-200 px-3 sm:px-6 py-3 sm:py-4">
+        <h3 className="flex items-center gap-2 text-base sm:text-lg font-semibold">
+          <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
           Your Progress
         </h3>
       </div>
-      <div className="px-6 py-4">
-        <div className="grid grid-cols-3 gap-4 text-center">
-          <div className="p-4 border border-gray-200 rounded-lg">
-            <div className="text-2xl font-bold" style={{ color: '#64303A' }}>{familyMembersCount}</div>
-            <div className="text-sm text-gray-600">Family Members</div>
+      <div className="px-3 sm:px-6 py-3 sm:py-4">
+        <div className="grid grid-cols-3 gap-2 sm:gap-4 text-center">
+          <div className="p-2 sm:p-4 border border-gray-200 rounded-lg">
+            <div className="text-lg sm:text-2xl font-bold" style={{ color: '#64303A' }}>{familyMembersCount}</div>
+            <div className="text-xs sm:text-sm text-gray-600">Family Members</div>
           </div>
-          <div className="p-4 border border-gray-200 rounded-lg">
-            <div className="text-2xl font-bold" style={{ color: '#64303A' }}>{freeLimit}</div>
-            <div className="text-sm text-gray-600">Free Limit</div>
+          <div className="p-2 sm:p-4 border border-gray-200 rounded-lg">
+            <div className="text-lg sm:text-2xl font-bold" style={{ color: '#64303A' }}>{freeLimit}</div>
+            <div className="text-xs sm:text-sm text-gray-600">Free Limit</div>
           </div>
-          <div className="p-4 border border-gray-200 rounded-lg">
-            <div className="text-2xl font-bold" style={{ color: '#64303A' }}>{remaining}</div>
-            <div className="text-sm text-gray-600">Remaining</div>
+          <div className="p-2 sm:p-4 border border-gray-200 rounded-lg">
+            <div className="text-lg sm:text-2xl font-bold" style={{ color: '#64303A' }}>{remaining}</div>
+            <div className="text-xs sm:text-sm text-gray-600">Remaining</div>
           </div>
         </div>
       </div>
