@@ -1,10 +1,10 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/db';
 import Member from '@/models/Member';
 import Relationship from '@/models/Relationship';
 
 export async function PUT(
-    request: Request,
+    request: NextRequest,
     { params }: { params: Promise<{ memberId: string }> }
 ) {
     try {
@@ -26,6 +26,7 @@ export async function PUT(
 }
 
 export async function DELETE(
+    request: NextRequest,
     { params }: { params: Promise<{ memberId: string }> }
 ) {
     try {
