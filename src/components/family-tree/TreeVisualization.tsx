@@ -284,7 +284,7 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
 
     // Calculate connection lines
     const connections = useMemo(() => {
-        const paths: JSX.Element[] = [];
+        const paths: React.ReactNode[] = [];
 
         familyMembers.forEach(person => {
             const pos = layout[person.id];
