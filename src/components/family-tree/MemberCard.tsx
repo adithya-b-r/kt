@@ -1,157 +1,109 @@
 import React from 'react';
-import { Plus, User, Heart, Pencil } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Plus, Pencil } from 'lucide-react'; // Can use Lucide icons inside buttons if we want, or plain text
 import { FamilyMember } from '@/components/hooks/useFamilyTree';
-import { cn } from '@/lib/utils';
+import styles from './family-tree.module.css';
 
 interface MemberCardProps {
     member: FamilyMember;
     isSelected?: boolean;
     isRoot?: boolean;
-    isInLaw?: boolean;
     onClick: () => void;
+    // We retain these props to hook up the actions
     onAddParent?: () => void;
     onAddSpouse?: () => void;
     onAddChild?: () => void;
-    showAddButtons?: boolean;
-    hasParents?: boolean;
-    hasSpouse?: boolean;
+    onNodeDelete?: () => void; // Added for delete action
+    hasHiddenFamily?: boolean; // To show the dumbbell icon
+    onViewFamily?: () => void;
 }
 
 export const MemberCard: React.FC<MemberCardProps> = ({
     member,
     isSelected,
     isRoot,
-    isInLaw = false,
     onClick,
     onAddParent,
     onAddSpouse,
     onAddChild,
-    showAddButtons = true,
-    hasParents = false,
-    hasSpouse = false,
+    onNodeDelete,
+    hasHiddenFamily,
+    onViewFamily,
 }) => {
-    const birthDate = member.birth_date ? new Date(member.birth_date) : null;
-    const isDeceased = !!member.death_date;
+    const birthYear = member.birth_date ? new Date(member.birth_date).getFullYear() : '';
 
-    const formatBirthDate = () => {
-        if (!birthDate) return null;
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        return `b. ${months[birthDate.getMonth()]} ${birthDate.getDate()} ${birthDate.getFullYear()}`;
-    };
+    // Construct class names manually or with a helper if preferred
+    // Using string interpolation for simplicity with the module
+    const genderClass = member.gender === 'male' ? styles.male : member.gender === 'female' ? styles.female : styles.other;
+    const rootClass = isRoot ? styles.focusedRoot : '';
+    const nodeClasses = `${styles.node} ${genderClass} ${rootClass}`;
 
     return (
-        <div className="relative group">
-            {showAddButtons && !hasParents && !isRoot && onAddParent && (
-                <div className="absolute -top-10 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-200 z-20">
-                    <Button
-                        size="sm"
-                        variant="outline"
-                        className="w-8 h-8 rounded-md p-0 bg-card border border-border hover:bg-muted shadow-sm"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onAddParent();
-                        }}
-                    >
-                        <Plus className="h-4 w-4 text-muted-foreground" />
-                    </Button>
-                </div>
+        // The container div acts as ".node"
+        <div
+            className={nodeClasses}
+            onClick={(e) => {
+                e.stopPropagation(); // prevent drag start on click?
+                onClick();
+            }}
+            // Style overrides for selection could go here if needed, or add another class
+            style={{
+                borderColor: isSelected ? '#4a90e2' : undefined,
+                boxShadow: isSelected ? '0 0 0 2px #4a90e2' : undefined
+            }}
+        >
+            {/* Dumbbell Icon for "View Family" if applicable */}
+            {hasHiddenFamily && !isRoot && (
+                <button
+                    className={styles.dumbbellBtn}
+                    title="View Family"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onViewFamily?.();
+                    }}
+                >
+                    <svg viewBox="0 0 24 14">
+                        <rect x="0" y="2" width="8" height="10" rx="2" ry="2" />
+                        <rect x="16" y="2" width="8" height="10" rx="2" ry="2" />
+                        <line x1="8" y1="7" x2="16" y2="7" stroke="currentColor" strokeWidth="2" />
+                    </svg>
+                </button>
             )}
 
-            <div
-                onClick={onClick}
-                className={cn(
-                    "relative bg-card rounded-lg cursor-pointer transition-all duration-200 w-40 shadow-md hover:shadow-lg border-2",
-                    isInLaw
-                        ? "border-rose-400"
-                        : "border-cyan-400",
-                    isSelected && "ring-2 ring-primary ring-offset-2 shadow-lg scale-[1.02]",
-                    isDeceased && "opacity-85"
-                )}
-            >
-                <div className="p-3">
-                    <div className="flex justify-center mb-2">
-                        <div className={cn(
-                            "w-14 h-14 rounded-full flex items-center justify-center overflow-hidden bg-muted relative",
-                            member.gender === 'male'
-                                ? "bg-blue-100 text-blue-600"
-                                : member.gender === 'female'
-                                    ? "bg-rose-100 text-rose-600"
-                                    : "bg-muted text-muted-foreground"
-                        )}>
-                            {member.photo_url ? (
-                                <img
-                                    src={member.photo_url}
-                                    alt={`${member.first_name} ${member.last_name}`}
-                                    className="w-full h-full object-cover"
-                                />
-                            ) : (
-                                <User className="h-8 w-8 text-muted-foreground/50" />
-                            )}
-                        </div>
-                    </div>
+            {/* Actions Overlay */}
+            <div className={styles.actionsOverlay}>
+                {/* The "Add Relation" button representing the picker opener */}
+                <button
+                    className={`${styles.actBtn} ${styles.addC} ${member.gender === 'male' ? styles.btnMale : member.gender === 'female' ? styles.btnFemale : ''}`}
+                    title="Add Relation"
+                    onClick={(e) => { e.stopPropagation(); onAddChild?.(); }}
+                >
+                    ➕
+                </button>
+            </div>
 
-                    <div className="text-center">
-                        <h3 className="font-semibold text-sm leading-tight text-foreground">
-                            {member.first_name} {member.last_name}
-                        </h3>
-
-                        {formatBirthDate() && (
-                            <p className="text-xs text-muted-foreground mt-1">
-                                {formatBirthDate()}
-                            </p>
-                        )}
-                    </div>
-                </div>
-
-                <div className="absolute bottom-2 right-2">
-                    <Pencil className="h-3.5 w-3.5 text-muted-foreground/50" />
-                </div>
-
-                {isRoot && (
-                    <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-primary rounded-full flex items-center justify-center shadow-sm border-2 border-background">
-                        <User className="h-3 w-3 text-primary-foreground" />
-                    </div>
-                )}
-
-                {isDeceased && (
-                    <div className="absolute -top-1.5 -left-1.5 w-5 h-5 bg-muted rounded-full flex items-center justify-center shadow-sm border-2 border-background">
-                        <span className="text-xs">†</span>
-                    </div>
+            {/* Avatar */}
+            <div className={styles.avatar}>
+                {member.photo_url ? (
+                    <img src={member.photo_url} alt={member.first_name} />
+                ) : (
+                    member.first_name[0]
                 )}
             </div>
 
-            {showAddButtons && onAddChild && (
-                <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-200 z-20">
-                    <Button
-                        size="sm"
-                        variant="outline"
-                        className="w-8 h-8 rounded-md p-0 bg-card border border-border hover:bg-muted shadow-sm"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onAddChild();
-                        }}
-                    >
-                        <Plus className="h-4 w-4 text-muted-foreground" />
-                    </Button>
+            {/* Info */}
+            <div className={styles.info}>
+                <div className={styles.name}>
+                    {member.first_name} {member.last_name}
+                    <span className={`${styles.genderSymbol} ${genderClass}`}>
+                        {member.gender === 'male' ? '♂' : member.gender === 'female' ? '♀' : ''}
+                    </span>
                 </div>
-            )}
-
-            {showAddButtons && !hasSpouse && onAddSpouse && (
-                <div className="absolute top-1/2 -right-10 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-200 z-20">
-                    <Button
-                        size="sm"
-                        variant="outline"
-                        className="w-8 h-8 rounded-md p-0 bg-card border border-border hover:bg-muted shadow-sm"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onAddSpouse();
-                        }}
-                    >
-                        <Heart className="h-4 w-4 text-rose-400" />
-                    </Button>
-                </div>
-            )}
+                {birthYear && (
+                    <div className={styles.details}>
+                        {birthYear}
+                    </div>
+                )}
+            </div>
         </div>
     );
 };

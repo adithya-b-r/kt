@@ -128,9 +128,45 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
 
                 switch (addContext.relationType) {
                     case 'parent':
+                        // VALIDATION: Check if a parent of the same gender already exists
+                        const existingParents = relationships
+                            .filter(r => r.relationship_type === 'parent_child' && r.person2_id === addContext.relatedTo!.id)
+                            .map(r => familyMembers.find(m => m.id === r.person1_id))
+                            .filter((m): m is FamilyMember => !!m);
+
+                        const duplicateGenderParent = existingParents.find(p => p.gender === newMemberData.gender);
+                        if (duplicateGenderParent) {
+                            // If we just added this member, we should strictly roll it back, but for now we'll just stop linking
+                            // Realistically we should probably check this BEFORE creating the member, but the flow is currently "Create then Link"
+                            // For a better UX we'd check before opening modal, but let's just error here and maybe clean up (or just leave them as unlinked member)
+                            toast.error(`This person already has a ${newMemberData.gender} parent.`);
+                            // Optional: delete the just-created member to clean up?
+                            await deleteFamilyMember(newMember.id);
+                            return;
+                        }
+
                         person1_id = newMember.id;
                         person2_id = addContext.relatedTo.id;
                         relationship_type = 'parent_child';
+
+                        // Check if the child already has a parent (to link as spouse)
+                        const existingParentRel = relationships.find(r =>
+                            r.relationship_type === 'parent_child' &&
+                            r.person2_id === addContext.relatedTo!.id
+                        );
+
+                        if (existingParentRel) {
+                            const existingParentId = existingParentRel.person1_id;
+                            // Add spouse relationship
+                            // We do this immediately after main relationship
+                            setTimeout(() => {
+                                addRelationship({
+                                    person1_id: existingParentId,
+                                    person2_id: newMember.id,
+                                    relationship_type: 'spouse'
+                                });
+                            }, 100);
+                        }
                         break;
                     case 'child':
                         person1_id = addContext.relatedTo.id;
@@ -157,11 +193,33 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
                         if (newMemberData.gender && addContext.relatedTo.gender &&
                             newMemberData.gender === addContext.relatedTo.gender) {
                             toast.error('Both parents cannot be of the same gender');
+                            // Clean up
+                            await deleteFamilyMember(newMember.id);
                             return;
                         }
                         person1_id = addContext.relatedTo.id;
                         person2_id = newMember.id;
                         relationship_type = 'spouse';
+
+                        // LOGIC: Link existing children to the new spouse
+                        // 1. Find all children of the 'relatedTo' (the original spouse)
+                        const currentSpouseChildren = relationships
+                            .filter(r => r.relationship_type === 'parent_child' && r.person1_id === addContext.relatedTo!.id)
+                            .map(r => r.person2_id);
+
+                        // 2. Link them to the new spouse (newMember)
+                        if (currentSpouseChildren.length > 0) {
+                            // We do this via setTimeout or Promise.all to ensure order or just fire them off
+                            setTimeout(() => {
+                                currentSpouseChildren.forEach(childId => {
+                                    addRelationship({
+                                        person1_id: newMember.id,
+                                        person2_id: childId,
+                                        relationship_type: 'parent_child'
+                                    });
+                                });
+                            }, 100);
+                        }
                         break;
                     default:
                         person1_id = '';

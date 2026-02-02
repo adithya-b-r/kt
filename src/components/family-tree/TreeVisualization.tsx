@@ -1,34 +1,32 @@
-import React, { useState, useRef, useCallback, useMemo } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ZoomIn, ZoomOut, RotateCcw, Plus, Users, Move, Crosshair } from 'lucide-react';
+import { ZoomIn, ZoomOut, Plus, RotateCcw, Target } from 'lucide-react';
 import { FamilyMember, Relationship } from '@/components/hooks/useFamilyTree';
 import { MemberCard } from './MemberCard';
+import { RelationshipPicker } from './RelationshipPicker';
+import { toPng } from 'html-to-image';
+import styles from './family-tree.module.css';
+
+// --- LAYOUT CONSTANTS (Matched to inspect.html) ---
+const CARD_W = 220;
+const CARD_H = 90;
+const GAP_H = 40;  // Horizontal gap between siblings/spouses
+const GAP_V = 200; // Vertical gap between generations
 
 interface TreeVisualizationProps {
     familyMembers: FamilyMember[];
     relationships: Relationship[];
     selectedMember: FamilyMember | null;
     onSelectMember: (member: FamilyMember) => void;
-    onAddMember: (relationType?: 'parent' | 'spouse' | 'child', relatedTo?: FamilyMember) => void;
+    onAddMember: (relationType?: 'parent' | 'spouse' | 'child' | 'sibling', relatedTo?: FamilyMember, gender?: 'male' | 'female') => void;
     containerRef?: React.RefObject<HTMLDivElement | null>;
 }
 
-interface PositionedMember {
-    member: FamilyMember;
+interface Position {
     x: number;
     y: number;
-    hasParents: boolean;
-    hasSpouse: boolean;
 }
-
-const CARD_WIDTH = 160;
-const CARD_HEIGHT = 140;
-const H_GAP = 30;
-const V_GAP = 80;
-const SPOUSE_GAP = 50;
-
-import { toPng } from 'html-to-image';
 
 export interface TreeVisualizationHandle {
     getExportData: (options?: { scale?: number }) => Promise<{ dataUrl: string; width: number; height: number }>;
@@ -41,6 +39,9 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
     onSelectMember,
     onAddMember,
 }, ref) => {
+    // ... (omitted unchanging parts) ...
+
+
     const containerRef = useRef<HTMLDivElement>(null);
     const contentRef = useRef<HTMLDivElement>(null);
     const [zoom, setZoom] = useState(1);
@@ -48,641 +49,510 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
     const [isDragging, setIsDragging] = useState(false);
     const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
-    const { spouseMap, childrenMap, parentsMap } = useMemo(() => {
-        const spouseMap = new Map<string, string>();
-        const childrenMap = new Map<string, Set<string>>();
-        const parentsMap = new Map<string, Set<string>>();
+    // Focus State for "Drill Down" (View Family)
+    const [focusedRootId, setFocusedRootId] = useState<string | null>(null);
+    const [previousRoots, setPreviousRoots] = useState<string[]>([]);
+
+    // Relationship Picker State
+    const [pickerTargetId, setPickerTargetId] = useState<string | null>(null);
+
+    // --- DATA HELPER MAPS ---
+    const { personMap, spouseMap, childrenMap, parentsMap } = useMemo(() => {
+        const personMap = new Map(familyMembers.map(m => [m.id, m]));
+        const spouseMap = new Map<string, string[]>();
+        const childrenMap = new Map<string, string[]>();
+        const parentsMap = new Map<string, string[]>();
+
+        // Init maps
+        familyMembers.forEach(m => {
+            spouseMap.set(m.id, []);
+            childrenMap.set(m.id, []);
+            parentsMap.set(m.id, []);
+        });
 
         relationships.forEach(rel => {
             if (rel.relationship_type === 'spouse') {
-                if (!spouseMap.has(rel.person1_id)) {
-                    spouseMap.set(rel.person1_id, rel.person2_id);
-                }
-                if (!spouseMap.has(rel.person2_id)) {
-                    spouseMap.set(rel.person2_id, rel.person1_id);
-                }
+                if (spouseMap.has(rel.person1_id)) spouseMap.get(rel.person1_id)!.push(rel.person2_id);
+                if (spouseMap.has(rel.person2_id)) spouseMap.get(rel.person2_id)!.push(rel.person1_id);
             } else if (rel.relationship_type === 'parent_child') {
-                if (!childrenMap.has(rel.person1_id)) {
-                    childrenMap.set(rel.person1_id, new Set());
-                }
-                childrenMap.get(rel.person1_id)!.add(rel.person2_id);
-
-                if (!parentsMap.has(rel.person2_id)) {
-                    parentsMap.set(rel.person2_id, new Set());
-                }
-                parentsMap.get(rel.person2_id)!.add(rel.person1_id);
+                // person1 is parent, person2 is child
+                if (childrenMap.has(rel.person1_id)) childrenMap.get(rel.person1_id)!.push(rel.person2_id);
+                if (parentsMap.has(rel.person2_id)) parentsMap.get(rel.person2_id)!.push(rel.person1_id);
             }
         });
 
-        return { spouseMap, childrenMap, parentsMap };
-    }, [relationships]);
+        return { personMap, spouseMap, childrenMap, parentsMap };
+    }, [familyMembers, relationships]);
 
-    const getChildrenOfCouple = useCallback((personId: string, spouseId: string | undefined): string[] => {
-        const personChildren = childrenMap.get(personId) || new Set<string>();
-        const spouseChildren = spouseId ? (childrenMap.get(spouseId) || new Set<string>()) : new Set<string>();
 
-        const coupleChildrenSet = new Set<string>();
-        personChildren.forEach(c => coupleChildrenSet.add(c));
-        spouseChildren.forEach(c => coupleChildrenSet.add(c));
-
-        const coupleChildren: string[] = [];
-        coupleChildrenSet.forEach(childId => {
-            const childParents = parentsMap.get(childId);
-            if (!childParents) return;
-
-            const parentIds = Array.from(childParents);
-
-            const hasThisPerson = parentIds.includes(personId);
-            const hasSpouse = spouseId ? parentIds.includes(spouseId) : false;
-            const otherParents = parentIds.filter(p => p !== personId && p !== spouseId);
-
-            if (hasThisPerson || hasSpouse) {
-                if (otherParents.length === 0) {
-                    coupleChildren.push(childId);
-                }
-            }
-        });
-
-        coupleChildren.sort((a, b) => {
-            const memberA = familyMembers.find(m => m.id === a);
-            const memberB = familyMembers.find(m => m.id === b);
-
-            const dateA = memberA?.birth_date ? new Date(memberA.birth_date).getTime() : Infinity;
-            const dateB = memberB?.birth_date ? new Date(memberB.birth_date).getTime() : Infinity;
-
-            if (dateA === Infinity && dateB === Infinity) {
-                const nameA = memberA?.first_name || '';
-                const nameB = memberB?.first_name || '';
-                return nameA.localeCompare(nameB);
-            }
-
-            return dateA - dateB;
-        });
-
-        return coupleChildren;
-    }, [childrenMap, parentsMap, familyMembers]);
-
-    const findTopmostAncestor = useCallback((startId: string, visited: Set<string>): string => {
-        if (visited.has(startId)) return startId;
-        visited.add(startId);
-
-        const parents = parentsMap.get(startId);
-        if (!parents || parents.size === 0) {
-            return startId;
-        }
-
-        const firstParent = Array.from(parents)[0];
-        return findTopmostAncestor(firstParent, visited);
-    }, [parentsMap]);
-
-    const positionedMembers = useMemo((): PositionedMember[] => {
-        if (familyMembers.length === 0) return [];
-
-        const positioned: PositionedMember[] = [];
+    // --- LAYOUT ENGINE (Ported from inspect.html) ---
+    const layout = useMemo(() => {
+        const positions: Record<string, Position> = {};
+        const widths: Record<string, number> = {};
         const visited = new Set<string>();
-        const memberIds = new Set(familyMembers.map(m => m.id));
 
-        const getGenerationLevel = (memberId: string, seen: Set<string>): number => {
-            if (seen.has(memberId)) return 0;
-            seen.add(memberId);
+        if (familyMembers.length === 0) return {};
 
-            const parents = parentsMap.get(memberId);
-            const validParents = parents ? Array.from(parents).filter(p => memberIds.has(p)) : [];
+        // 1. Determine Root
+        let rootMember: FamilyMember | undefined;
 
-            if (validParents.length === 0) {
-                const spouseId = spouseMap.get(memberId);
-                if (spouseId && !seen.has(spouseId) && memberIds.has(spouseId)) {
-                    const spouseParents = parentsMap.get(spouseId);
-                    const validSpouseParents = spouseParents ? Array.from(spouseParents).filter(p => memberIds.has(p)) : [];
-                    if (validSpouseParents.length > 0) {
-                        return getGenerationLevel(validSpouseParents[0], new Set(seen)) + 1;
-                    }
+        if (focusedRootId && personMap.has(focusedRootId)) {
+            // Climb up to highest ancestor for context, but keep focusedRootId centrally relevant?
+            // "STRICTLY respect the forced root context, but climb to highest ancestor"
+            let current = personMap.get(focusedRootId);
+            while (current) {
+                const pIds = parentsMap.get(current.id) || [];
+                if (pIds.length > 0 && personMap.has(pIds[0])) {
+                    current = personMap.get(pIds[0]);
+                } else {
+                    break;
                 }
-                return 0;
             }
-
-            return getGenerationLevel(validParents[0], new Set(seen)) + 1;
-        };
-
-        const generations = new Map<string, number>();
-        familyMembers.forEach(member => {
-            generations.set(member.id, getGenerationLevel(member.id, new Set()));
-        });
-
-        const generationGroups = new Map<number, string[]>();
-        generations.forEach((gen, memberId) => {
-            if (!generationGroups.has(gen)) {
-                generationGroups.set(gen, []);
-            }
-            generationGroups.get(gen)!.push(memberId);
-        });
-
-        const rootAncestors = generationGroups.get(0) || [];
-
-        const calculateSubtreeWidth = (personId: string, visitedCalc: Set<string>): number => {
-            if (visitedCalc.has(personId) || !memberIds.has(personId)) return 0;
-            visitedCalc.add(personId);
-
-            const spouseId = spouseMap.get(personId);
-            const hasSpouse = spouseId && memberIds.has(spouseId);
-            if (hasSpouse && !visitedCalc.has(spouseId)) visitedCalc.add(spouseId);
-
-            const children = getChildrenOfCouple(personId, spouseId).filter(c => memberIds.has(c));
-            const unvisitedChildren = children.filter(c => !visitedCalc.has(c));
-
-            if (unvisitedChildren.length === 0) {
-                return CARD_WIDTH + (hasSpouse && !visited.has(spouseId) ? CARD_WIDTH + SPOUSE_GAP : 0);
-            }
-
-            let totalChildWidth = 0;
-            unvisitedChildren.forEach((childId, idx) => {
-                totalChildWidth += calculateSubtreeWidth(childId, new Set(visitedCalc));
-                if (idx < unvisitedChildren.length - 1) {
-                    totalChildWidth += H_GAP;
-                }
+            rootMember = current;
+        } else {
+            // Default Root: Someone with no parents
+            rootMember = familyMembers.find(m => {
+                const pIds = parentsMap.get(m.id) || [];
+                return pIds.length === 0;
             });
-
-            const parentWidth = CARD_WIDTH + (hasSpouse ? CARD_WIDTH + SPOUSE_GAP : 0);
-            return Math.max(parentWidth, totalChildWidth);
-        };
-
-        const positionPerson = (personId: string, startX: number, y: number): number => {
-            if (visited.has(personId) || !memberIds.has(personId)) return startX;
-
-            const member = familyMembers.find(m => m.id === personId);
-            if (!member) return startX;
-
-            visited.add(personId);
-
-            const spouseId = spouseMap.get(personId);
-            const spouse = spouseId && memberIds.has(spouseId) ? familyMembers.find(m => m.id === spouseId) : null;
-            const spouseAlreadyVisited = spouse && visited.has(spouseId!);
-
-            if (spouse && !spouseAlreadyVisited) {
-                visited.add(spouseId!);
-            }
-
-            const children = getChildrenOfCouple(personId, spouseId).filter(c => memberIds.has(c));
-            const unvisitedChildren = children.filter(c => !visited.has(c));
-
-            let totalChildrenWidth = 0;
-            const childWidths: number[] = [];
-
-            unvisitedChildren.forEach((childId, idx) => {
-                const width = calculateSubtreeWidth(childId, new Set(visited));
-                childWidths.push(width);
-                totalChildrenWidth += width;
-                if (idx < unvisitedChildren.length - 1) {
-                    totalChildrenWidth += H_GAP;
-                }
-            });
-
-            const hasUnvisitedSpouse = spouse && !spouseAlreadyVisited;
-            const parentUnitWidth = CARD_WIDTH + (hasUnvisitedSpouse ? CARD_WIDTH + SPOUSE_GAP : 0);
-            const subtreeWidth = Math.max(parentUnitWidth, totalChildrenWidth);
-            const parentStartX = startX + (subtreeWidth - parentUnitWidth) / 2;
-
-            positioned.push({
-                member,
-                x: parentStartX,
-                y,
-                hasParents: (parentsMap.get(personId)?.size || 0) > 0,
-                hasSpouse: !!spouse,
-            });
-
-            if (hasUnvisitedSpouse) {
-                const spouseX = parentStartX + CARD_WIDTH + SPOUSE_GAP;
-                positioned.push({
-                    member: spouse,
-                    x: spouseX,
-                    y,
-                    hasParents: (parentsMap.get(spouseId!)?.size || 0) > 0,
-                    hasSpouse: true,
-                });
-            }
-
-            if (unvisitedChildren.length > 0) {
-                const childrenStartX = startX + (subtreeWidth - totalChildrenWidth) / 2;
-                let currentX = childrenStartX;
-
-                unvisitedChildren.forEach((childId, idx) => {
-                    positionPerson(childId, currentX, y + CARD_HEIGHT + V_GAP);
-                    currentX += childWidths[idx] + H_GAP;
-                });
-            }
-
-            return startX + subtreeWidth;
-        };
-
-        let currentX = 100;
-        rootAncestors.forEach(rootId => {
-            if (!visited.has(rootId)) {
-                const width = calculateSubtreeWidth(rootId, new Set());
-                positionPerson(rootId, currentX, 120);
-                currentX += width + H_GAP * 2;
-            }
-        });
-
-        const maxY = positioned.length > 0 ? Math.max(...positioned.map(p => p.y)) : 60;
-
-        familyMembers.forEach(member => {
-            if (!visited.has(member.id)) {
-                positioned.push({
-                    member,
-                    x: currentX,
-                    y: maxY + CARD_HEIGHT + V_GAP + 50,
-                    hasParents: false,
-                    hasSpouse: false,
-                });
-                currentX += CARD_WIDTH + H_GAP;
-                visited.add(member.id);
-            }
-        });
-
-        return positioned;
-    }, [familyMembers, spouseMap, parentsMap, getChildrenOfCouple]);
-
-    const connectionElements = useMemo(() => {
-        const elements: React.JSX.Element[] = [];
-        const memberPositions = new Map(positionedMembers.map(pm => [pm.member.id, pm]));
-        const processedSpouses = new Set<string>();
-        const processedChildren = new Set<string>();
-
-        relationships.forEach((rel, idx) => {
-            if (rel.relationship_type !== 'spouse') return;
-
-            const key = [rel.person1_id, rel.person2_id].sort().join('-');
-            if (processedSpouses.has(key)) return;
-            processedSpouses.add(key);
-
-            const person1 = memberPositions.get(rel.person1_id);
-            const person2 = memberPositions.get(rel.person2_id);
-            if (!person1 || !person2) return;
-
-            const leftPerson = person1.x < person2.x ? person1 : person2;
-            const rightPerson = person1.x < person2.x ? person2 : person1;
-
-            const x1 = leftPerson.x + CARD_WIDTH;
-            const y1 = leftPerson.y + CARD_HEIGHT / 2;
-            const x2 = rightPerson.x;
-            const y2 = rightPerson.y + CARD_HEIGHT / 2;
-            const midX = (x1 + x2) / 2;
-
-            elements.push(
-                <g key={`spouse-${idx}`}>
-                    <line
-                        x1={x1}
-                        y1={y1}
-                        x2={x2}
-                        y2={y2}
-                        stroke="#9ca3af"
-                        strokeWidth={2}
-                        strokeLinecap="round"
-                    />
-                    <circle
-                        cx={midX}
-                        cy={y1}
-                        r={12}
-                        fill="#fef3c7"
-                        stroke="#f59e0b"
-                        strokeWidth={2}
-                    />
-                    <circle
-                        cx={midX - 3}
-                        cy={y1}
-                        r={5}
-                        fill="none"
-                        stroke="#f59e0b"
-                        strokeWidth={1.5}
-                    />
-                    <circle
-                        cx={midX + 3}
-                        cy={y1}
-                        r={5}
-                        fill="none"
-                        stroke="#f59e0b"
-                        strokeWidth={1.5}
-                    />
-                </g>
-            );
-
-            const children = getChildrenOfCouple(rel.person1_id, rel.person2_id)
-                .map(childId => memberPositions.get(childId))
-                .filter((child): child is PositionedMember => !!child);
-
-            if (children.length > 0) {
-                const parentMidX = leftPerson.x + CARD_WIDTH + SPOUSE_GAP / 2;
-                const parentY = leftPerson.y + CARD_HEIGHT;
-                const childCenters = children.map(child => child.x + CARD_WIDTH / 2).sort((a, b) => a - b);
-                const childY = Math.min(...children.map(child => child.y));
-                const midY = parentY + (childY - parentY) / 2;
-
-                elements.push(
-                    <g key={`couple-${key}`}>
-                        <line
-                            x1={parentMidX}
-                            y1={parentY}
-                            x2={parentMidX}
-                            y2={midY}
-                            stroke="#9ca3af"
-                            strokeWidth={2}
-                            strokeLinecap="round"
-                        />
-                        <line
-                            x1={childCenters[0]}
-                            y1={midY}
-                            x2={childCenters[childCenters.length - 1]}
-                            y2={midY}
-                            stroke="#9ca3af"
-                            strokeWidth={2}
-                            strokeLinecap="round"
-                        />
-                        {children.map(child => (
-                            <line
-                                key={`child-${child.member.id}`}
-                                x1={child.x + CARD_WIDTH / 2}
-                                y1={midY}
-                                x2={child.x + CARD_WIDTH / 2}
-                                y2={child.y}
-                                stroke="#9ca3af"
-                                strokeWidth={2}
-                                strokeLinecap="round"
-                            />
-                        ))}
-                    </g>
-                );
-
-                children.forEach(child => processedChildren.add(child.member.id));
-            }
-        });
-
-        relationships.forEach((rel, idx) => {
-            if (rel.relationship_type !== 'parent_child') return;
-            if (processedChildren.has(rel.person2_id)) return;
-
-            const parent = memberPositions.get(rel.person1_id);
-            const child = memberPositions.get(rel.person2_id);
-            if (!parent || !child) return;
-
-            const parentX = parent.x + CARD_WIDTH / 2;
-            const parentY = parent.y + CARD_HEIGHT;
-            const childX = child.x + CARD_WIDTH / 2;
-            const childY = child.y;
-            const midY = parentY + (childY - parentY) / 2;
-
-            elements.push(
-                <g key={`parent-${idx}`}>
-                    <line
-                        x1={parentX}
-                        y1={parentY}
-                        x2={parentX}
-                        y2={midY}
-                        stroke="#9ca3af"
-                        strokeWidth={2}
-                        strokeLinecap="round"
-                    />
-                    <line
-                        x1={parentX}
-                        y1={midY}
-                        x2={childX}
-                        y2={midY}
-                        stroke="#9ca3af"
-                        strokeWidth={2}
-                        strokeLinecap="round"
-                    />
-                    <line
-                        x1={childX}
-                        y1={midY}
-                        x2={childX}
-                        y2={childY}
-                        stroke="#9ca3af"
-                        strokeWidth={2}
-                        strokeLinecap="round"
-                    />
-                </g>
-            );
-        });
-
-        return elements;
-    }, [positionedMembers, relationships, getChildrenOfCouple]);
-
-    React.useImperativeHandle(ref, () => ({
-        getExportData: async (options) => {
-            if (!contentRef.current) throw new Error('Tree content not found');
-            if (positionedMembers.length === 0) {
-                return { dataUrl: '', width: 0, height: 0 };
-            }
-
-            const minX = Math.min(...positionedMembers.map(pm => pm.x));
-            const maxX = Math.max(...positionedMembers.map(pm => pm.x + CARD_WIDTH));
-            const minY = Math.min(...positionedMembers.map(pm => pm.y));
-            const maxY = Math.max(...positionedMembers.map(pm => pm.y + CARD_HEIGHT));
-
-            const PADDING = 50;
-            const SCALE = options?.scale || 1;
-            const width = (maxX - minX) * SCALE + (PADDING * 2);
-            const height = (maxY - minY) * SCALE + (PADDING * 2);
-
-            const tx = PADDING - minX * SCALE;
-            const ty = PADDING - minY * SCALE;
-
-            const dataUrl = await toPng(contentRef.current, {
-                quality: 0.95,
-                backgroundColor: '#F5F2E9',
-                width: width,
-                height: height,
-                pixelRatio: 3,
-                style: {
-                    transform: `matrix(${SCALE}, 0, 0, ${SCALE}, ${tx}, ${ty})`,
-                    transformOrigin: 'top left',
-                    width: `${width}px`,
-                    height: `${height}px`,
-                }
-            });
-
-            return { dataUrl, width, height };
+            if (!rootMember) rootMember = familyMembers[0];
         }
-    }));
 
+        if (!rootMember) return {};
+
+        // Helper: Calculate Widths (Bottom Up)
+        const calculateWidth = (id: string, visitedCalc: Set<string>): number => {
+            if (visitedCalc.has(id)) return 0;
+            visitedCalc.add(id);
+
+            // Children Width
+            let childrenW = 0;
+
+            // Aggregate children from Self AND Spouses
+            const myChildren = childrenMap.get(id) || [];
+            const spouses = spouseMap.get(id) || [];
+            const spouseChildren = spouses.flatMap(sid => childrenMap.get(sid) || []);
+
+            const distinctChildren = [...new Set([...myChildren, ...spouseChildren])];
+
+            if (distinctChildren.length > 0) {
+                distinctChildren.forEach(cid => {
+                    childrenW += calculateWidth(cid, visitedCalc);
+                });
+                childrenW += (distinctChildren.length - 1) * GAP_H;
+            }
+
+            // Family Base Width (Person + Spouses)
+            // We assume primary person + spouses are one block
+            const baseW = (1 + spouses.length) * CARD_W + (spouses.length * GAP_H);
+
+            widths[id] = Math.max(childrenW, baseW);
+            return widths[id];
+        };
+
+        // Helper: Assign Positions (Top Down)
+        const assignPos = (id: string, x: number, y: number, visitedPos: Set<string>) => {
+            if (visitedPos.has(id)) return;
+            visitedPos.add(id);
+
+            const assignedW = widths[id] || CARD_W;
+            const spouses = spouseMap.get(id) || [];
+
+            // --- 1. Position The Couple ---
+            const unitCount = 1 + spouses.length;
+            const totalUnitW = unitCount * CARD_W + (unitCount - 1) * GAP_H;
+
+            // Center the couple within the assigned width space
+            const startX = x + (assignedW - totalUnitW) / 2;
+
+            positions[id] = { x: startX, y };
+
+            // Position Spouse(s) to the right
+            let currentUnitX = startX + CARD_W + GAP_H;
+            spouses.forEach(sid => {
+                if (!visitedPos.has(sid)) {
+                    positions[sid] = { x: currentUnitX, y };
+                    visitedPos.add(sid);
+                    currentUnitX += CARD_W + GAP_H;
+                }
+            });
+
+            // --- 2. Position Children ---
+            // Aggregate children from Self AND Spouses
+            const myChildren = childrenMap.get(id) || [];
+            const spouseChildren = spouses.flatMap(sid => childrenMap.get(sid) || []);
+            const distinctChildren = [...new Set([...myChildren, ...spouseChildren])];
+
+            if (distinctChildren.length > 0) {
+                // Calculate total width actually needed by children
+                let totalChildW = 0;
+                distinctChildren.forEach(cid => {
+                    totalChildW += widths[cid] || 0;
+                });
+                totalChildW += (distinctChildren.length - 1) * GAP_H;
+
+                // Start X for first child (Centered under the couple/parent)
+                let childX = x + (assignedW - totalChildW) / 2;
+                const childY = y + GAP_V;
+
+                distinctChildren.forEach(cid => {
+                    assignPos(cid, childX, childY, visitedPos);
+                    childX += (widths[cid] || 0) + GAP_H;
+                });
+            }
+        };
+
+        // Run Layout
+        // We might have a cycle or issue if we don't define a strict root, but `rootMember` helps.
+        // Also need to handle "Calculate Width" with a fresh set each time?
+        // Recursive calc might spiral if circular. Prototype used `visited`.
+        calculateWidth(rootMember.id, new Set());
+        assignPos(rootMember.id, 0, 50, visited);
+
+        return positions;
+    }, [familyMembers, focusedRootId, personMap, spouseMap, childrenMap, parentsMap]);
+
+
+    // --- VIEW / ZOOM LOGIC ---
+    useEffect(() => {
+        // Center view on load or reset
+        handleCenter();
+    }, [layout]); // re-center when layout changes? Maybe only if empty.
+
+    const handleCenter = useCallback(() => {
+        // Simple centering logic
+        if (Object.keys(layout).length === 0) return;
+
+        const vals = Object.values(layout);
+        const minX = Math.min(...vals.map(p => p.x));
+        const maxX = Math.max(...vals.map(p => p.x + CARD_W));
+        const minY = Math.min(...vals.map(p => p.y));
+        const maxY = Math.max(...vals.map(p => p.y + CARD_H));
+
+        const treeW = maxX - minX;
+        const treeH = maxY - minY;
+
+        const contW = containerRef.current?.clientWidth || window.innerWidth;
+        const contH = containerRef.current?.clientHeight || window.innerHeight;
+
+        // Initial zoom to fit or default
+        // const fitZoom = Math.min(contW / (treeW + 100), contH / (treeH + 100));
+        // setZoom(Math.min(Math.max(fitZoom, 0.5), 1.5));
+
+        const newPanX = (contW - treeW * zoom) / 2 - minX * zoom;
+        const newPanY = (contH - treeH * zoom) / 2 - minY * zoom;
+
+        setPan({ x: newPanX, y: 100 }); // Top padding preference
+    }, [layout, zoom]);
+
+
+    // Handlers for Pan/Zoom
     const handleMouseDown = useCallback((e: React.MouseEvent) => {
         const target = e.target as HTMLElement;
-        if (target.closest('[data-member-card]') || target.closest('button')) return;
-
+        if (target.closest(`.${styles.node}`) || target.closest('button')) return;
         setIsDragging(true);
         setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
     }, [pan]);
 
     const handleMouseMove = useCallback((e: React.MouseEvent) => {
         if (isDragging) {
-            setPan({
-                x: e.clientX - dragStart.x,
-                y: e.clientY - dragStart.y,
-            });
+            setPan({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
         }
     }, [isDragging, dragStart]);
 
-    const handleMouseUp = useCallback(() => {
-        setIsDragging(false);
-    }, []);
+    const handleMouseUp = useCallback(() => setIsDragging(false), []);
 
-    const handleTouchStart = useCallback((e: React.TouchEvent) => {
-        const target = e.target as HTMLElement;
-        if (target.closest('[data-member-card]') || target.closest('button')) return;
-        if (!e.touches.length) return;
-        const touch = e.touches[0];
-        setIsDragging(true);
-        setDragStart({ x: touch.clientX - pan.x, y: touch.clientY - pan.y });
-    }, [pan]);
 
-    const handleTouchMove = useCallback((e: React.TouchEvent) => {
-        if (isDragging && e.touches.length) {
-            const touch = e.touches[0];
-            setPan({
-                x: touch.clientX - dragStart.x,
-                y: touch.clientY - dragStart.y,
-            });
-        }
-    }, [isDragging, dragStart]);
-
-    const handleTouchEnd = useCallback(() => {
-        setIsDragging(false);
-    }, []);
-
-    const handleZoomIn = () => setZoom(prev => Math.min(prev * 1.2, 2));
-    const handleZoomOut = () => setZoom(prev => Math.max(prev * 0.8, 0.5));
-    const handleReset = () => {
-        setZoom(1);
-        setPan({ x: 0, y: 0 });
+    // --- RENDERER HELPER (Elbow Lines) ---
+    // Returns SVG Path d attribute
+    const drawElbowInfo = (x1: number, y1: number, x2: number, y2: number) => {
+        // Elbow style: Vertical down -> Horizontal -> Vertical to target
+        const midY = (y1 + y2) / 2;
+        return `M ${x1} ${y1} L ${x1} ${midY} L ${x2} ${midY} L ${x2} ${y2}`;
     };
 
-    const handleCenter = useCallback(() => {
-        if (positionedMembers.length === 0) return;
+    // Calculate connection lines
+    const connections = useMemo(() => {
+        const paths: JSX.Element[] = [];
 
-        const minX = Math.min(...positionedMembers.map(pm => pm.x));
-        const maxX = Math.max(...positionedMembers.map(pm => pm.x + CARD_WIDTH));
-        const minY = Math.min(...positionedMembers.map(pm => pm.y));
-        const maxY = Math.max(...positionedMembers.map(pm => pm.y + CARD_HEIGHT));
+        familyMembers.forEach(person => {
+            const pos = layout[person.id];
+            if (!pos) return;
 
-        const treeWidth = maxX - minX;
-        const treeHeight = maxY - minY;
+            // 1. Spouse Lines
+            const spouseIds = spouseMap.get(person.id) || [];
+            spouseIds.forEach(sid => {
+                const sPos = layout[sid];
+                if (sPos && sid > person.id) {
+                    const y = pos.y + CARD_H / 2;
+                    paths.push(
+                        <path
+                            key={`spouse-${person.id}-${sid}`}
+                            d={`M ${pos.x + CARD_W} ${y} L ${sPos.x} ${y}`}
+                            stroke="#888"
+                            strokeWidth="2"
+                            fill="none"
+                        />
+                    );
+                }
+            });
 
-        const containerWidth = containerRef.current?.clientWidth || 800;
-        const containerHeight = containerRef.current?.clientHeight || 600;
+            // 2. Parent -> Child Lines
+            // Logic: If I have a spouse, draw from "Center of Couple". If single, from "Bottom of Me".
+            // Only draw lines to children if I am the "primary" parent (e.g. father, or single mother)
 
-        const centerX = (containerWidth - treeWidth * zoom) / 2 - minX * zoom;
-        const centerY = (containerHeight - treeHeight * zoom) / 2 - minY * zoom;
+            // We define "primary" as Male, OR if no spouse.
+            // (If same-sex couple, we might need a tie-breaker, but assuming Male-Female for now or handling duplicates harmlessly)
+            const isPrimary = (person.gender === 'male' || (spouseMap.get(person.id)?.length || 0) === 0);
 
-        setPan({ x: centerX, y: centerY });
-    }, [positionedMembers, zoom]);
+            if (isPrimary) {
+                // Collect children from Self AND from Spouses
+                const myChildren = childrenMap.get(person.id) || [];
+                const spouses = spouseMap.get(person.id) || [];
+
+                const spouseChildren = spouses.flatMap(sid => childrenMap.get(sid) || []);
+
+                // Merge and dedup
+                const allChildren = [...new Set([...myChildren, ...spouseChildren])];
+
+                if (allChildren.length > 0) {
+                    let startX = pos.x + CARD_W / 2;
+                    let startY = pos.y + CARD_H;
+
+                    // Adjust start point if spouse exists (use first spouse found that is visible)
+                    if (spouses.length > 0) {
+                        const visibleSpouseId = spouses.find(sid => layout[sid]);
+                        if (visibleSpouseId) {
+                            const sPos = layout[visibleSpouseId];
+                            startX = (pos.x + sPos.x + CARD_W) / 2; // Midpoint of couple
+                            startY = pos.y + CARD_H / 2; // From the connecting line
+                        }
+                    }
+
+                    allChildren.forEach(cid => {
+                        const cPos = layout[cid];
+                        if (cPos) {
+                            paths.push(
+                                <path
+                                    key={`child-${person.id}-${cid}`}
+                                    d={drawElbowInfo(startX, startY, cPos.x + CARD_W / 2, cPos.y)}
+                                    stroke="#888"
+                                    strokeWidth="2"
+                                    fill="none"
+                                />
+                            );
+                        }
+                    });
+                }
+            }
+        });
+
+        return paths;
+    }, [layout, familyMembers, spouseMap, childrenMap]);
+
+
+    const handleFocus = (id: string) => {
+        if (focusedRootId === id) return;
+        setPreviousRoots(prev => [...prev, focusedRootId || 'default']);
+        setFocusedRootId(id);
+    };
+
+    const handleBack = () => {
+        const newHistory = [...previousRoots];
+        const last = newHistory.pop();
+        setPreviousRoots(newHistory);
+        setFocusedRootId(last === 'default' ? null : last || null);
+    };
+
+    // --- EXPORT HANDLE ---
+    React.useImperativeHandle(ref, () => ({
+        getExportData: async (options) => {
+            if (!contentRef.current) throw new Error('Tree content not found');
+
+            // 1. Calculate Bounding Box of the Layout
+            // Default bounds if empty
+            let minX = 0, minY = 0, maxX = 800, maxY = 600;
+
+            const vals = Object.values(layout);
+            if (vals.length > 0) {
+                minX = Math.min(...vals.map(p => p.x));
+                maxX = Math.max(...vals.map(p => p.x + CARD_W));
+                minY = Math.min(...vals.map(p => p.y));
+                maxY = Math.max(...vals.map(p => p.y + CARD_H));
+            }
+
+            // Add Padding
+            const PADDING = 50;
+            const fullWidth = maxX - minX + (PADDING * 2);
+            const fullHeight = maxY - minY + (PADDING * 2);
+
+            // 2. Generate Image with specific transform to capture everything
+            // We need to shift the content so that (minX, minY) moves to (PADDING, PADDING)
+            // And we ensure the scale is 1 (or custom if passed)
+            const exportScale = options?.scale || 1.0;
+
+            // Note: toPng 'style' prop overrides the element's style during capture
+            const dataUrl = await toPng(contentRef.current, {
+                backgroundColor: '#F5F5F5',
+                width: fullWidth * exportScale,
+                height: fullHeight * exportScale,
+                style: {
+                    // Reset transform to identity, then translate to positive coordinates
+                    transform: `scale(${exportScale}) translate(${-minX + PADDING}px, ${-minY + PADDING}px)`,
+                    transformOrigin: 'top left',
+                    width: 'auto', // Allow it to expand
+                    height: 'auto'
+                }
+            });
+
+            return {
+                dataUrl,
+                width: fullWidth * exportScale,
+                height: fullHeight * exportScale
+            };
+        }
+    }));
+
+
+    // Handle Picker Selection
+    const handlePickerSelect = (relationType: 'parent' | 'spouse' | 'child' | 'sibling', gender?: 'male' | 'female') => {
+        if (!pickerTargetId) return;
+        const targetMember = personMap.get(pickerTargetId);
+        if (!targetMember) return;
+
+        if (relationType === 'sibling') {
+            // Find parent of target
+            const pIds = parentsMap.get(targetMember.id) || [];
+            if (pIds.length > 0) {
+                const parent = personMap.get(pIds[0]);
+                onAddMember('child', parent);
+            } else {
+                alert("Cannot add sibling to a root node without parents. Add a parent first.");
+            }
+        } else {
+            onAddMember(relationType, targetMember);
+        }
+        setPickerTargetId(null);
+    };
 
     return (
-        <Card className="relative overflow-hidden border-2 border-border/50 shadow-lg h-[60vh] sm:h-[75vh] md:h-[85vh]">
-            <div className="absolute top-2 sm:top-4 left-2 sm:left-4 z-30 flex items-center gap-0.5 sm:gap-1 bg-card/95 backdrop-blur-md rounded-xl p-1 sm:p-1.5 shadow-lg border border-border/50 flex-wrap max-w-[calc(100%-1rem)]">
-                <Button size="sm" variant="ghost" onClick={handleZoomOut} className="h-7 w-7 sm:h-8 sm:w-8 p-0 hover:bg-muted" title="Zoom out">
-                    <ZoomOut className="h-3 w-3 sm:h-4 sm:w-4" />
+        <Card className="h-[calc(100vh-140px)] relative overflow-hidden border border-gray-200 shadow-sm bg-[#f5f7fa]">
+            {/* Relationship Picker Overlay */}
+            {pickerTargetId && personMap.get(pickerTargetId) && (
+                <RelationshipPicker
+                    targetMember={personMap.get(pickerTargetId)!}
+                    onClose={() => setPickerTargetId(null)}
+                    onOptionSelect={handlePickerSelect}
+                />
+            )}
+
+            {/* Unified Toolbar (Top Left) */}
+            <div className="absolute top-5 left-5 z-20 flex items-center gap-1 bg-white rounded-lg shadow-sm border border-gray-200 p-1">
+                {/* Zoom Out */}
+                <Button size="icon" variant="ghost" className="h-8 w-8 text-gray-500" onClick={() => setZoom(z => Math.max(z * 0.8, 0.5))}>
+                    <ZoomOut size={16} />
                 </Button>
-                <span className="text-xs font-semibold min-w-9 sm:min-w-11 text-center text-muted-foreground">{Math.round(zoom * 100)}%</span>
-                <Button size="sm" variant="ghost" onClick={handleZoomIn} className="h-7 w-7 sm:h-8 sm:w-8 p-0 hover:bg-muted" title="Zoom in">
-                    <ZoomIn className="h-3 w-3 sm:h-4 sm:w-4" />
+
+                {/* Zoom Level Text */}
+                <span className="text-xs font-medium text-gray-600 min-w-[40px] text-center">
+                    {Math.round(zoom * 100)}%
+                </span>
+
+                {/* Zoom In */}
+                <Button size="icon" variant="ghost" className="h-8 w-8 text-gray-500" onClick={() => setZoom(z => Math.min(z * 1.2, 2))}>
+                    <ZoomIn size={16} />
                 </Button>
-                <div className="w-px h-4 sm:h-5 bg-border mx-0.5 sm:mx-1" />
-                <Button size="sm" variant="ghost" onClick={handleReset} className="h-7 w-7 sm:h-8 sm:w-8 p-0 hover:bg-muted" title="Reset zoom">
-                    <RotateCcw className="h-3 w-3 sm:h-4 sm:w-4" />
+
+                <div className="h-4 w-px bg-gray-300 mx-1" /> {/* Divider */}
+
+                {/* Reset View */}
+                <Button size="icon" variant="ghost" className="h-8 w-8 text-gray-500" onClick={handleCenter} title="Reset View">
+                    <RotateCcw size={16} />
                 </Button>
-                <Button size="sm" variant="ghost" onClick={handleCenter} className="h-7 w-7 sm:h-8 sm:w-8 p-0 hover:bg-muted" title="Center Tree">
-                    <Crosshair className="h-3 w-3 sm:h-4 sm:w-4" />
+
+                {/* Focus/Center (Maybe "Fit to Screen" or just center) */}
+                <Button size="icon" variant="ghost" className="h-8 w-8 text-gray-500" onClick={handleCenter} title="Re-center">
+                    <Target size={16} />
                 </Button>
-                <div className="w-px h-4 sm:h-5 bg-border mx-0.5 sm:mx-1" />
-                <Button size="sm" onClick={() => onAddMember()} className="h-7 sm:h-8 px-2 sm:px-3 gap-1 text-xs sm:text-sm font-medium">
-                    <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
-                    <span className="hidden sm:inline">Add Member</span>
-                    <span className="sm:hidden">Add</span>
+
+                <div className="h-4 w-px bg-gray-300 mx-1" /> {/* Divider */}
+
+                {/* Add Member (Start New Family) */}
+                <Button
+                    variant="ghost"
+                    className="h-8 text-gray-600 text-xs font-medium hover:text-gray-900"
+                    onClick={() => onAddMember()}
+                >
+                    <Plus size={14} className="mr-1" />
+                    Add Member
                 </Button>
             </div>
 
-            <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 z-30 text-xs text-muted-foreground bg-card/90 backdrop-blur-sm px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg items-center gap-1 sm:gap-2 shadow border border-border/30 hidden sm:flex\">
-                <Move className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                <span>Drag or swipe to pan • Hover cards for quick actions</span>
-            </div>
-
-            <CardContent
+            {/* Canvas */}
+            <div
                 ref={containerRef}
-                className="p-0 h-full cursor-grab active:cursor-grabbing relative overflow-hidden touch-none"
-                style={{
-                    background: 'linear-gradient(135deg, rgba(243, 244, 246, 0.3) 0%, #ffffff 50%, rgba(243, 244, 246, 0.2) 100%)',
-                }}
+                className="w-full h-full cursor-grab active:cursor-grabbing relative"
                 onMouseDown={handleMouseDown}
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseUp}
-                onTouchStart={handleTouchStart}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}
-                onTouchCancel={handleTouchEnd}
             >
                 <div
-                    className="absolute inset-0 opacity-[0.03] pointer-events-none"
+                    ref={contentRef}
+                    className="absolute top-0 left-0 transition-transform duration-75 origin-top-left"
                     style={{
-                        backgroundImage: 'radial-gradient(circle, hsl(var(--foreground)) 1px, transparent 1px)',
-                        backgroundSize: '24px 24px',
+                        transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`
                     }}
-                />
+                >
+                    {/* SVG Layer */}
+                    <svg className="absolute top-0 left-0 overflow-visible pointer-events-none" width="1" height="1">
+                        {connections}
+                    </svg>
 
-                {familyMembers.length === 0 ? (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="text-center p-8 rounded-2xl bg-card/50 backdrop-blur-sm border border-border/30 shadow-xl max-w-md mx-4">
-                            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-primary/10 flex items-center justify-center">
-                                <Users className="h-10 w-10 text-primary" />
-                            </div>
-                            <h3 className="text-xl font-bold mb-3">Start Your Family Tree</h3>
-                            <p className="text-muted-foreground mb-6 leading-relaxed">
-                                Begin building your family heritage by adding your first family member
-                            </p>
-                            <Button onClick={() => onAddMember()} size="lg" className="gap-2 px-6">
-                                <Plus className="h-5 w-5" />
-                                Add First Member
-                            </Button>
-                        </div>
-                    </div>
-                ) : (
-                    <div
-                        ref={contentRef}
-                        className="absolute inset-0"
-                        style={{
-                            transform: `scale(${zoom}) translate(${pan.x / zoom}px, ${pan.y / zoom}px)`,
-                            transformOrigin: 'center center',
-                        }}
-                    >
-                        <svg className="absolute inset-0 pointer-events-none" style={{ width: '4000px', height: '3000px' }}>
-                            {connectionElements}
-                        </svg>
+                    {/* Nodes Layer */}
+                    {Object.entries(layout).map(([id, pos]) => {
+                        const member = personMap.get(id);
+                        if (!member) return null;
 
-                        {positionedMembers.map((pm) => (
+                        // Logic for Hidden Family (Dumbbell)
+                        // 1. Hidden Parents: if father/mother exists but not in `layout`
+                        // 2. Hidden Children: if child exists but not in `layout`
+                        let hasHidden = false;
+                        const pIds = parentsMap.get(id) || [];
+                        if (pIds.some(pid => !layout[pid])) hasHidden = true;
+
+                        const cIds = childrenMap.get(id) || [];
+                        if (cIds.some(cid => !layout[cid])) hasHidden = true;
+
+                        return (
                             <div
-                                key={pm.member.id}
-                                data-member-card
-                                className="absolute transition-transform duration-200"
+                                key={id}
                                 style={{
-                                    left: pm.x,
-                                    top: pm.y,
+                                    position: 'absolute',
+                                    left: pos.x,
+                                    top: pos.y
                                 }}
                             >
                                 <MemberCard
-                                    member={pm.member}
-                                    isSelected={selectedMember?.id === pm.member.id}
-                                    isRoot={pm.member.is_root}
-                                    onClick={() => onSelectMember(pm.member)}
-                                    onAddParent={pm.member.is_root ? undefined : () => onAddMember('parent', pm.member)}
-                                    onAddSpouse={pm.hasSpouse ? undefined : () => onAddMember('spouse', pm.member)}
-                                    onAddChild={() => onAddMember('child', pm.member)}
-                                    hasParents={pm.hasParents}
-                                    hasSpouse={pm.hasSpouse}
+                                    member={member}
+                                    isRoot={id === focusedRootId}
+                                    hasHiddenFamily={hasHidden && id !== focusedRootId} // Don't show if already focused
+                                    onClick={() => onSelectMember(member)}
+                                    // Actions
+                                    onAddSpouse={() => onAddMember('spouse', member)}
+                                    onAddChild={() => setPickerTargetId(id)}
+                                    onNodeDelete={() => {
+                                        // We don't have a direct delete prop, but we can hook it up if we expose it
+                                        // For now, selecting brings up details which has delete.
+                                        onSelectMember(member);
+                                    }}
+                                    onViewFamily={() => handleFocus(id)}
                                 />
                             </div>
-                        ))}
-                    </div>
-                )}
-            </CardContent>
+                        );
+                    })}
+                </div>
+            </div>
         </Card>
     );
 });

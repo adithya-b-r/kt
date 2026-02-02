@@ -1,0 +1,436 @@
+/* src/components/family-tree/family-tree.module.css */
+
+/* --- NODES --- */
+.node {
+    position: absolute;
+    width: 220px;
+    height: 90px;
+    background: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    box-sizing: border-box;
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+    z-index: 10;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.node:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    z-index: 100;
+}
+
+.node.male:hover {
+    border-color: #4a90e2;
+    box-shadow: 0 12px 24px rgba(74, 144, 226, 0.2);
+}
+
+.node.female:hover {
+    border-color: #e24a8d;
+    box-shadow: 0 12px 24px rgba(226, 74, 141, 0.2);
+}
+
+.node.focusedRoot {
+    border-width: 2px;
+    border-style: solid;
+}
+
+.node.male.focusedRoot {
+    border-color: #4a90e2;
+    box-shadow: 0 0 15px rgba(74, 144, 226, 0.4);
+}
+
+.node.female.focusedRoot {
+    border-color: #e24a8d;
+    box-shadow: 0 0 15px rgba(226, 74, 141, 0.4);
+}
+
+/* Gender Strip */
+.node::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 15px;
+    bottom: 15px;
+    width: 4px;
+    border-radius: 0 4px 4px 0;
+}
+
+.node.male::before {
+    background: #4a90e2;
+}
+
+.node.female::before {
+    background: #e24a8d;
+}
+
+/* Fallback for other/unknown */
+.node.other::before {
+    background: #888;
+}
+
+
+.avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: #eee;
+    margin-right: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: #555;
+    flex-shrink: 0;
+    overflow: hidden;
+    /* For images */
+}
+
+.avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.info {
+    flex: 1;
+    overflow: hidden;
+}
+
+.name {
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 2px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    color: #333;
+}
+
+.details {
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.genderSymbol {
+    font-weight: normal;
+    margin-left: 5px;
+    opacity: 0.7;
+}
+
+.genderSymbol.male {
+    color: #4a90e2;
+}
+
+.genderSymbol.female {
+    color: #e24a8d;
+}
+
+/* Actions Overlay - wrapper for the bottom tab button */
+.actionsOverlay {
+    position: absolute;
+    bottom: -15px;
+    /* Centered on border (half of 30px height) */
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    justify-content: center;
+    background: transparent;
+    padding: 0;
+    border: none;
+    box-shadow: none;
+    opacity: 1;
+    pointer-events: auto;
+    z-index: 200;
+}
+
+/* The Add Button looking like a tab */
+.actBtn.addC {
+    width: 30px;
+    height: 30px;
+    /* Equal width/height for circle */
+    border-radius: 50%;
+    /* Circle */
+    background: #ffffff;
+    /* Border matching the card's typical border would be nice, but gender specific overrides apply */
+    border: 1px solid #ddd;
+    /* Connect to card */
+    color: #555;
+    /* Dark plus as in image */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.actBtn.addC:hover {
+    background: #f9f9f9;
+    transform: translateY(2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btnMale {
+    border-color: #4a90e2 !important;
+    border-top: none !important;
+    color: #4a90e2 !important;
+}
+
+.btnFemale {
+    border-color: #e24a8d !important;
+    border-top: none !important;
+    color: #e24a8d !important;
+}
+
+/* Edit Button (Pencil) */
+.editBtn {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    background: transparent;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s, background 0.2s;
+}
+
+.editBtn:hover {
+    color: #333;
+    background: rgba(0, 0, 0, 0.05);
+}
+
+/* Dumbbell Icon for "View Family" */
+.dumbbellBtn {
+    position: absolute;
+    top: -12px;
+    right: 15px;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    padding: 2px 8px;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    z-index: 200;
+    min-height: 20px;
+}
+
+.dumbbellBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    background: #f0f8ff;
+    border-color: #4a90e2;
+}
+
+.dumbbellBtn svg {
+    width: 24px;
+    height: 14px;
+    fill: #666;
+    transition: fill 0.2s;
+}
+
+
+/* --- RELATIONSHIP PICKER OVERLAY --- */
+.pickerOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(5px);
+    z-index: 3000;
+    display: flex;
+    /* Changed to flex for centering if needed, or stick to absolute */
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.pickerOverlay.open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.pickerSvg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+    /* Just above container background, below cards */
+}
+
+.pickerClose {
+    position: absolute;
+    top: 30px;
+    right: 40px;
+    color: #aaa;
+    font-size: 1.5rem;
+    cursor: pointer;
+    z-index: 3010;
+    font-family: sans-serif;
+    font-weight: bold;
+    background: transparent;
+    border: none;
+}
+
+.pickerClose:hover {
+    color: white;
+}
+
+.pickerContainer {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 800px;
+    /* Fixed size container for positioning logic */
+    height: 600px;
+    transform: translate(-50%, -50%);
+    z-index: 3005;
+}
+
+.pickerCard {
+    position: absolute;
+    width: 180px;
+    height: 60px;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    user-select: none;
+    z-index: 10;
+}
+
+.pickerCard:hover {
+    transform: scale(1.05) translateY(-2px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+    border-color: #bbb;
+}
+
+.pickerCard.centerPerson {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 200px;
+    height: 80px;
+    background: #f0f0f0;
+    cursor: default;
+    border-color: #ccc;
+    z-index: 3006;
+}
+
+.pickerCard.centerPerson:hover {
+    transform: translate(-50%, -50%);
+    /* Override hover move for center */
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.pickerCard.maleRole {
+    border-left: 4px solid #4a90e2;
+}
+
+.pickerCard.femaleRole {
+    border-left: 4px solid #e24a8d;
+}
+
+.pickerCard.neutral {
+    border-left: 4px solid #888;
+}
+
+.pickerAvatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #f3f4f6;
+    margin-right: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    color: #555;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.pickerInfo {
+    flex: 1;
+    overflow: hidden;
+}
+
+.pickerTitle {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 2px;
+}
+
+.pickerSub {
+    font-size: 0.75rem;
+    color: #888;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Positions relative to 800x600 container */
+.posFather {
+    top: 15%;
+    left: 25%;
+}
+
+.posMother {
+    top: 15%;
+    right: 25%;
+}
+
+.posBrother {
+    top: 43%;
+    left: 5%;
+}
+
+.posSister {
+    top: 57%;
+    left: 5%;
+}
+
+.posPartner {
+    top: calc(50% - 30px);
+    right: 5%;
+    /* transform removed to prevent conflict with hover effect */
+}
+
+.posSon {
+    bottom: 15%;
+    left: 25%;
+}
+
+.posDaughter {
+    bottom: 15%;
+    right: 25%;
+}
+
+/* Connector Path Styles */
+.connector {
+    fill: none;
+    stroke: #888;
+    /* Slightly lighter than black background might need */
+    stroke-width: 2;
+    opacity: 0.6;
+}
