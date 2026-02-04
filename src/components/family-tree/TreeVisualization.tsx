@@ -135,6 +135,17 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
 
             const distinctChildren = [...new Set([...myChildren, ...spouseChildren])];
 
+            // Sort children by birth_date (Oldest first -> Left)
+            distinctChildren.sort((aId, bId) => {
+                const a = personMap.get(aId);
+                const b = personMap.get(bId);
+                if (!a || !b) return 0;
+                // If birth date missing, push to end
+                if (!a.birth_date) return 1;
+                if (!b.birth_date) return -1;
+                return a.birth_date.localeCompare(b.birth_date);
+            });
+
             if (distinctChildren.length > 0) {
                 distinctChildren.forEach(cid => {
                     childrenW += calculateWidth(cid, visitedCalc);
@@ -182,6 +193,17 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
             const myChildren = childrenMap.get(id) || [];
             const spouseChildren = spouses.flatMap(sid => childrenMap.get(sid) || []);
             const distinctChildren = [...new Set([...myChildren, ...spouseChildren])];
+
+            // Sort children by birth_date (Oldest first -> Left)
+            // MUST match the order in calculateWidth for correct spacing
+            distinctChildren.sort((aId, bId) => {
+                const a = personMap.get(aId);
+                const b = personMap.get(bId);
+                if (!a || !b) return 0;
+                if (!a.birth_date) return 1;
+                if (!b.birth_date) return -1;
+                return a.birth_date.localeCompare(b.birth_date);
+            });
 
             if (distinctChildren.length > 0) {
                 // Calculate total width actually needed by children
