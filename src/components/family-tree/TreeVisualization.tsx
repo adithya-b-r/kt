@@ -57,11 +57,14 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
     const [pickerTargetId, setPickerTargetId] = useState<string | null>(null);
 
     // --- DATA HELPER MAPS ---
-    const { personMap, spouseMap, childrenMap, parentsMap } = useMemo(() => {
-        const personMap = new Map(familyMembers.map(m => [m.id, m]));
+    const { personMap, spouseMap, childrenMap, parentsMap, relationshipMap } = useMemo(() => {
+        const personMap = new Map<string, FamilyMember>();
+        familyMembers.forEach(m => personMap.set(m.id, m));
+
         const spouseMap = new Map<string, string[]>();
         const childrenMap = new Map<string, string[]>();
         const parentsMap = new Map<string, string[]>();
+        const relationshipMap = new Map<string, Relationship>();
 
         // Init maps
         familyMembers.forEach(m => {
@@ -74,6 +77,11 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
             if (rel.relationship_type === 'spouse') {
                 if (spouseMap.has(rel.person1_id)) spouseMap.get(rel.person1_id)!.push(rel.person2_id);
                 if (spouseMap.has(rel.person2_id)) spouseMap.get(rel.person2_id)!.push(rel.person1_id);
+
+                // key: minId-maxId
+                const key = [rel.person1_id, rel.person2_id].sort().join('-');
+                relationshipMap.set(key, rel);
+
             } else if (rel.relationship_type === 'parent_child') {
                 // person1 is parent, person2 is child
                 if (childrenMap.has(rel.person1_id)) childrenMap.get(rel.person1_id)!.push(rel.person2_id);
@@ -81,7 +89,7 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
             }
         });
 
-        return { personMap, spouseMap, childrenMap, parentsMap };
+        return { personMap, spouseMap, childrenMap, parentsMap, relationshipMap };
     }, [familyMembers, relationships]);
 
 
@@ -322,25 +330,44 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
                     const endX = sPos.x;
                     const midX = (startX + endX) / 2;
 
+                    const relKey = [person.id, sid].sort().join('-');
+                    const relData = relationshipMap.get(relKey);
+                    const marriageDate = relData?.marriage_date;
+                    const divorceDate = relData?.divorce_date;
+                    const hasDates = !!marriageDate;
+
                     paths.push(
                         <g key={`spouse-${person.id}-${sid}`}>
+                            {/* Tooltip Title */}
+                            <title>
+                                {marriageDate ? `Married: ${marriageDate}` : 'No Marriage Date'}
+                                {divorceDate ? `\nDivorced: ${divorceDate}` : ''}
+                            </title>
+
                             {/* Connection Line */}
                             <path
                                 d={`M ${startX} ${y} L ${endX} ${y}`}
-                                stroke="#d1d5db"
+                                stroke={divorceDate ? "#ef4444" : "#d1d5db"} // Red line if divorced
                                 strokeWidth="2"
+                                strokeDasharray={divorceDate ? "4 2" : "none"} // Dashed if divorced
                                 fill="none"
                             />
                             {/* Wedding Ring Icon */}
-                            <g transform={`translate(${midX - 10}, ${y - 10})`}>
+                            <g transform={`translate(${midX - 10}, ${y - 10})`} className="cursor-help">
                                 {/* Outer Glow/Bg circle */}
                                 <circle cx="10" cy="10" r="14" fill="white" />
-                                <circle cx="10" cy="10" r="12" fill="#FEF3C7" stroke="#F59E0B" strokeWidth="1.5" />
+                                <circle cx="10" cy="10" r="12" fill={hasDates ? "#FEF3C7" : "#fee2e2"} stroke={hasDates ? "#F59E0B" : "#ef4444"} strokeWidth="1.5" />
+
                                 {/* Interlocking Rings */}
                                 <g transform="translate(4, 6) scale(0.6)">
                                     <circle cx="8" cy="8" r="7" fill="none" stroke="#D97706" strokeWidth="2.5" />
                                     <circle cx="15" cy="8" r="7" fill="none" stroke="#D97706" strokeWidth="2.5" />
                                 </g>
+
+                                {/* Warning Indicator (Exclamation Mark) */}
+                                {!hasDates && (
+                                    <text x="10" y="28" textAnchor="middle" fontSize="10" fill="#ef4444" fontWeight="bold">!</text>
+                                )}
                             </g>
                         </g>
                     );
@@ -423,7 +450,7 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
         });
 
         return paths;
-    }, [layout, familyMembers, spouseMap, childrenMap, personMap]);
+    }, [layout, familyMembers, spouseMap, childrenMap, personMap, relationshipMap]);
 
 
     const handleFocus = (id: string) => {

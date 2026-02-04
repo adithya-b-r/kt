@@ -49,6 +49,7 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
         updateFamilyMember,
         deleteFamilyMember,
         addRelationship,
+        updateRelationship,
     } = useFamilyTree(treeId);
 
     const { user } = useAuth();
@@ -72,6 +73,8 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
         birth_date: '',
         death_date: '',
         photo_url: '',
+        marriage_date: '',
+        divorce_date: '',
     });
 
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -100,6 +103,12 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
         if (!spouseRel) return null;
         const spouseId = spouseRel.person1_id === memberId ? spouseRel.person2_id : spouseRel.person1_id;
         return familyMembers.find(m => m.id === spouseId) || null;
+    };
+
+    const getSpouseRelationship = (memberId: string) => {
+        return relationships.find(r =>
+            r.relationship_type === 'spouse' && (r.person1_id === memberId || r.person2_id === memberId)
+        );
     };
 
     const selectedSpouse = useMemo(() => {
@@ -238,6 +247,10 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
                         person2_id = newMember.id;
                         relationship_type = 'spouse';
 
+                        // Extract dates meant for relationship, NOT the member
+                        const { marriage_date, divorce_date } = newMemberData as any;
+
+
                         // LOGIC: Link existing children to the new spouse
                         // 1. Find all children of the 'relatedTo' (the original spouse)
                         const currentSpouseChildren = relationships
@@ -264,8 +277,15 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
                         relationship_type = '';
                 }
 
+
                 if (person1_id && person2_id) {
-                    await addRelationship({ person1_id, person2_id, relationship_type });
+                    const extraData: any = {};
+                    if (relationship_type === 'spouse') {
+                        if ((newMemberData as any).marriage_date) extraData.marriage_date = (newMemberData as any).marriage_date;
+                        if ((newMemberData as any).divorce_date) extraData.divorce_date = (newMemberData as any).divorce_date;
+                    }
+
+                    await addRelationship({ person1_id, person2_id, relationship_type, ...extraData });
                 }
             }
 
@@ -279,6 +299,8 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
                 birth_date: '',
                 death_date: '',
                 photo_url: '',
+                marriage_date: '',
+                divorce_date: '',
             });
             toast.success('Family member added successfully!');
         } catch (error) {
@@ -716,14 +738,17 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
                 />
             </div>
 
+
             <MemberDetailPanel
                 member={selectedMember}
                 parents={selectedParents}
                 spouse={selectedSpouse}
+                spouseRelationship={selectedMember ? getSpouseRelationship(selectedMember.id) : undefined}
                 isOpen={isDetailPanelOpen}
                 onClose={() => setIsDetailPanelOpen(false)}
                 onUpdate={handleUpdateMember}
                 onDelete={handleDeleteMember}
+                onUpdateRelationship={updateRelationship}
                 onAddRelationship={() => {
                     setIsDetailPanelOpen(false);
                     setIsAddingRelationship(true);
@@ -906,7 +931,7 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
                 selectedMember={selectedMember}
                 onAddRelationship={handleAddRelationship}
             />
-        </div>
+        </div >
     );
 };
 

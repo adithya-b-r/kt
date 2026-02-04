@@ -18,6 +18,8 @@ export interface Relationship {
     person1_id: string;
     person2_id: string;
     relationship_type: string;
+    marriage_date?: string;
+    divorce_date?: string;
 }
 
 export interface FamilyTree {
@@ -55,7 +57,9 @@ export const useFamilyTree = (treeId: string) => {
                 id: r._id,
                 person1_id: r.person1_id,
                 person2_id: r.person2_id,
-                relationship_type: r.relationship_type
+                relationship_type: r.relationship_type,
+                marriage_date: r.marriage_date ? r.marriage_date.split('T')[0] : undefined,
+                divorce_date: r.divorce_date ? r.divorce_date.split('T')[0] : undefined
             })));
         } catch (error) {
             console.error(error);
@@ -167,7 +171,9 @@ export const useFamilyTree = (treeId: string) => {
                 id: newRelData._id,
                 person1_id: newRelData.person1_id,
                 person2_id: newRelData.person2_id,
-                relationship_type: newRelData.relationship_type
+                relationship_type: newRelData.relationship_type,
+                marriage_date: newRelData.marriage_date ? newRelData.marriage_date.split('T')[0] : undefined,
+                divorce_date: newRelData.divorce_date ? newRelData.divorce_date.split('T')[0] : undefined
             };
             setRelationships((prev) => [...prev, newRelationship]);
         } catch (error) {
@@ -175,6 +181,37 @@ export const useFamilyTree = (treeId: string) => {
             toast.error('Failed to add relationship');
         }
     }, [treeId, relationships]);
+
+    const updateRelationship = useCallback(async (id: string, data: Partial<Relationship>) => {
+        try {
+            const res = await fetch(`/api/relationships/${id}`, { // We'll need to handle route param or just put id in body? API design check.
+                // Wait, standard CRUD usually puts ID in URL. But I didn't check if [id] route exists.
+                // Let's assume standard REST, but I might need to create the route.
+                // Actually, let's check if the route exists or if I need to make one.
+                // Checking previous view_file of api/relationships/route.ts showed only POST.
+                // So I probably need to create api/relationships/[id]/route.ts or handle PUT in the main route.
+                // I'll assume I need to CREATE the dynamic route.
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (!res.ok) throw new Error('Failed to update relationship');
+
+            const updatedRel = await res.json();
+             setRelationships(prev => prev.map(r => r.id === id ? {
+                ...r,
+                ...updatedRel,
+                 marriage_date: updatedRel.marriage_date ? updatedRel.marriage_date.split('T')[0] : undefined,
+                 divorce_date: updatedRel.divorce_date ? updatedRel.divorce_date.split('T')[0] : undefined
+            } : r));
+
+        } catch (error) {
+            console.error(error);
+            toast.error('Failed to update relationship');
+            throw error;
+        }
+    }, []);
 
     return {
         familyTree,
@@ -185,5 +222,6 @@ export const useFamilyTree = (treeId: string) => {
         updateFamilyMember,
         deleteFamilyMember,
         addRelationship,
+        updateRelationship,
     };
 };

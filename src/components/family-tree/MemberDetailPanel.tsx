@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { FamilyMember } from '@/components/hooks/useFamilyTree';
+import { FamilyMember, Relationship } from '@/components/hooks/useFamilyTree';
 import { cn } from '@/lib/utils';
 import { toast } from '@/components/ui/sonner';
 
@@ -15,10 +15,12 @@ interface MemberDetailPanelProps {
     member: FamilyMember | null;
     parents?: FamilyMember[];
     spouse?: FamilyMember | null;
+    spouseRelationship?: Relationship;
     isOpen: boolean;
     onClose: () => void;
     onUpdate: (id: string, data: Partial<FamilyMember>) => Promise<void>;
     onDelete: (id: string) => Promise<void>;
+    onUpdateRelationship: (id: string, data: Partial<Relationship>) => Promise<void>;
     onAddRelationship: () => void;
 }
 
@@ -26,10 +28,12 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
     member,
     parents = [],
     spouse = null,
+    spouseRelationship,
     isOpen,
     onClose,
     onUpdate,
     onDelete,
+    onUpdateRelationship,
     onAddRelationship,
 }) => {
     const [isEditing, setIsEditing] = useState(false);
@@ -59,6 +63,13 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
                 death_date: member.death_date || '',
                 photo_url: member.photo_url || '',
             });
+
+            // If there's a spouse relationship, we might want to edit it too. 
+            // But editData is typed as Partial<FamilyMember>. 
+            // Ideally we separate member edit form from relationship edit form, or combine them.
+            // For simplicity, let's keep member edit as is, and add a separate small form or handle it here if we extend the type.
+            // Actually, let's keep it separate in the UI for clarity.
+
             setIsEditing(false);
         }
     }, [member]);
@@ -361,6 +372,29 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
                                     </div>
                                 )}
 
+                                {/* SPOUSE DETAILS SECTION */}
+                                {spouse && (
+                                    <div>
+                                        <p className="text-sm font-semibold mb-2" style={{ color: '#64303A' }}>Spouse & Relationship</p>
+                                        <div className="rounded-lg border p-3 bg-white" style={{ borderColor: '#d4c5cb' }}>
+                                            <div className="flex items-center justify-between mb-2">
+                                                <div className="flex items-center gap-2">
+                                                    <Heart className="h-4 w-4 text-rose-500" />
+                                                    <span className="text-sm font-medium text-gray-700">
+                                                        {spouse.first_name} {spouse.last_name}
+                                                    </span>
+                                                </div>
+                                                {spouseRelationship && (
+                                                    <RelationshipEditor
+                                                        relationship={spouseRelationship}
+                                                        onUpdate={onUpdateRelationship}
+                                                    />
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
                                 {birthYear && (
                                     <div className="flex items-start gap-3">
                                         <Calendar className="h-5 w-5 text-gray-500 mt-0.5" />
@@ -439,5 +473,68 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
                 </div>
             </div>
         </>
+    );
+};
+
+const RelationshipEditor = ({ relationship, onUpdate }: { relationship: Relationship, onUpdate: (id: string, data: Partial<Relationship>) => Promise<void> }) => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [data, setData] = useState({
+        marriage_date: relationship.marriage_date || '',
+        divorce_date: relationship.divorce_date || ''
+    });
+
+    const handleSave = async () => {
+        await onUpdate(relationship.id, data);
+        setIsEditing(false);
+        toast.success("Relationship updated");
+    };
+
+    if (isEditing) {
+        return (
+            <div className="mt-2 space-y-2 border-t pt-2 w-full">
+                <div className="grid grid-cols-2 gap-2">
+                    <div>
+                        <Label className="text-[10px] text-gray-500">Married</Label>
+                        <Input
+                            type="date"
+                            className="h-7 text-xs px-1"
+                            value={data.marriage_date}
+                            onChange={e => setData(p => ({ ...p, marriage_date: e.target.value }))}
+                        />
+                    </div>
+                    <div>
+                        <Label className="text-[10px] text-gray-500">Divorced</Label>
+                        <Input
+                            type="date"
+                            className="h-7 text-xs px-1"
+                            value={data.divorce_date}
+                            onChange={e => setData(p => ({ ...p, divorce_date: e.target.value }))}
+                        />
+                    </div>
+                </div>
+                <div className="flex justify-end gap-2">
+                    <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={() => setIsEditing(false)}>Cancel</Button>
+                    <Button size="sm" className="h-6 text-xs bg-[#64303A]" onClick={handleSave}>Save</Button>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="text-right">
+            <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => setIsEditing(true)}>
+                <Edit2 className="h-3 w-3 text-gray-400" />
+            </Button>
+            <div className="text-xs text-gray-500">
+                {relationship.marriage_date ? (
+                    <span>Married: {new Date(relationship.marriage_date).toLocaleDateString()}</span>
+                ) : (
+                    <span className="text-amber-600 flex items-center gap-1 justify-end"><span className="text-[10px]">Add Date</span></span>
+                )}
+                {relationship.divorce_date && (
+                    <span className="block text-red-400">Divorced: {new Date(relationship.divorce_date).toLocaleDateString()}</span>
+                )}
+            </div>
+        </div>
     );
 };

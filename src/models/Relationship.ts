@@ -6,6 +6,8 @@ export interface IRelationship {
     person1_id: mongoose.Types.ObjectId;
     person2_id: mongoose.Types.ObjectId;
     relationship_type: string;
+    marriage_date?: Date;
+    divorce_date?: Date;
     created_at: Date;
 }
 
@@ -14,6 +16,8 @@ const RelationshipSchema = new Schema<IRelationship>({
     person1_id: { type: Schema.Types.ObjectId, ref: 'Member', required: true },
     person2_id: { type: Schema.Types.ObjectId, ref: 'Member', required: true },
     relationship_type: { type: String, required: true },
+    marriage_date: { type: Date },
+    divorce_date: { type: Date },
     created_at: { type: Date, default: Date.now },
 });
 
