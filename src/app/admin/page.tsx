@@ -4,8 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { UserTable } from '@/components/admin/UserTable';
 import { UserEditDialog } from '@/components/admin/UserEditDialog';
-import { Button } from '@/components/ui/button';
-import { ShieldCheck, LogOut } from 'lucide-react';
+import AdminLayout from '@/components/admin/AdminLayout';
 import { toast } from 'sonner';
 
 export default function AdminPage() {
@@ -73,31 +72,28 @@ export default function AdminPage() {
     }
   };
 
-  if (isLoading) return <div className="flex h-screen items-center justify-center">Loading Admin Panel...</div>;
+  if (isLoading) {
+    return (
+      <AdminLayout>
+        <div className="flex h-[50vh] items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1b7c7c]"></div>
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <AdminLayout>
+      <div className="space-y-6">
 
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-indigo-600 rounded-lg shadow-sm">
-              <ShieldCheck className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-              <p className="text-sm text-gray-500">Manage users, roles, and limits</p>
-            </div>
-          </div>
-          <Button variant="outline" onClick={() => router.push('/')}>
-            <LogOut className="h-4 w-4 mr-2" />
-            Exit Admin
-          </Button>
+        {/* Simple Header */}
+        <div>
+          <h1 className="text-2xl font-bold text-slate-800">User Management</h1>
+          <p className="text-slate-500 text-sm">Manage user plans and limits directly.</p>
         </div>
 
-        {/* Content */}
-        <div className="bg-white rounded-xl shadow-sm border p-6">
+        {/* Table Section */}
+        <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-1">
           <UserTable
             users={filteredUsers}
             onEdit={(user) => {
@@ -120,6 +116,6 @@ export default function AdminPage() {
         />
 
       </div>
-    </div>
+    </AdminLayout>
   );
 }

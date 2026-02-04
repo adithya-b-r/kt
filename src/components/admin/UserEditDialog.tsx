@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { toast } from 'sonner';
+import { Loader2, Save } from 'lucide-react';
 
 interface UserEditDialogProps {
   user: any | null;
@@ -37,6 +37,7 @@ export function UserEditDialog({ user, open, onClose, onSave }: UserEditDialogPr
     tree_limit: 100,
     password: ''
   });
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -47,83 +48,89 @@ export function UserEditDialog({ user, open, onClose, onSave }: UserEditDialogPr
         role: user.role || 'user',
         plan_type: user.plan_type || 'free',
         tree_limit: user.tree_limit || 100,
-        password: '' // Don't show existing hash
+        password: ''
       });
     }
   }, [user, open]);
 
   const handleSave = async () => {
     if (!user) return;
-
+    setIsSaving(true);
     try {
       await onSave(user._id, formData);
       onClose();
     } catch (error) {
-      // Error handling done by parent usually
+      // Error handling done by parent
+    } finally {
+      setIsSaving(false);
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+    <Dialog open={open} onOpenChange={(val) => !isSaving && onClose()}>
+      <DialogContent className="sm:max-w-[425px] bg-white text-slate-900">
         <DialogHeader>
-          <DialogTitle>Edit User</DialogTitle>
+          <DialogTitle className="text-slate-900">Edit User</DialogTitle>
         </DialogHeader>
+
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="firstName">First Name</Label>
+              <Label htmlFor="firstName" className="text-slate-700">First Name</Label>
               <Input
                 id="firstName"
                 value={formData.first_name}
                 onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+                className="bg-white border-slate-200 text-slate-900"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="lastName">Last Name</Label>
+              <Label htmlFor="lastName" className="text-slate-700">Last Name</Label>
               <Input
                 id="lastName"
                 value={formData.last_name}
                 onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+                className="bg-white border-slate-200 text-slate-900"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email" className="text-slate-700">Email</Label>
             <Input
               id="email"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              className="bg-white border-slate-200 text-slate-900"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="role">Role</Label>
+              <Label htmlFor="role" className="text-slate-700">Role</Label>
               <Select
                 value={formData.role}
                 onValueChange={(val) => setFormData({ ...formData, role: val })}
               >
-                <SelectTrigger>
+                <SelectTrigger className="bg-white border-slate-200 text-slate-900">
                   <SelectValue placeholder="Role" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border-slate-200">
                   <SelectItem value="user">User</SelectItem>
                   <SelectItem value="admin">Admin</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="plan">Plan Type</Label>
+              <Label htmlFor="plan" className="text-slate-700">Plan Type</Label>
               <Select
                 value={formData.plan_type}
                 onValueChange={(val) => setFormData({ ...formData, plan_type: val })}
               >
-                <SelectTrigger>
+                <SelectTrigger className="bg-white border-slate-200 text-slate-900">
                   <SelectValue placeholder="Plan" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border-slate-200">
                   <SelectItem value="free">Free</SelectItem>
                   <SelectItem value="pro">Pro</SelectItem>
                 </SelectContent>
@@ -132,30 +139,35 @@ export function UserEditDialog({ user, open, onClose, onSave }: UserEditDialogPr
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="limit">Tree Limit</Label>
+            <Label htmlFor="limit" className="text-slate-700">Tree Limit</Label>
             <Input
               id="limit"
               type="number"
               value={formData.tree_limit}
               onChange={(e) => setFormData({ ...formData, tree_limit: parseInt(e.target.value) || 0 })}
+              className="bg-white border-slate-200 text-slate-900"
             />
           </div>
 
-          <div className="space-y-2 pt-2 border-t">
-            <Label htmlFor="password">Reset Password (Optional)</Label>
+          <div className="space-y-2 pt-2 border-t border-slate-100">
+            <Label htmlFor="password" className="text-slate-700">Reset Password (Optional)</Label>
             <Input
               id="password"
               type="password"
               placeholder="Enter new password to reset"
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              className="bg-white border-slate-200 text-slate-900"
             />
-            <p className="text-[10px] text-gray-500">Leave blank to keep current password.</p>
           </div>
         </div>
+
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSave}>Save Changes</Button>
+          <Button variant="outline" onClick={onClose} disabled={isSaving} className="text-slate-700 bg-white hover:bg-slate-50">Cancel</Button>
+          <Button onClick={handleSave} disabled={isSaving} className="bg-[#1b7c7c] hover:bg-[#156161] text-white">
+            {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Save Changes
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
