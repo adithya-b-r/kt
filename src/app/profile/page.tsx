@@ -24,6 +24,8 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
+import { LocationSelector } from '@/components/LocationSelector';
+
 interface EducationEntry {
     degree: string;
     institution: string;
@@ -78,10 +80,9 @@ export default function ProfilePage() {
 
     const [education, setEducation] = useState<EducationEntry[]>([]);
 
+    // ... existing state ...
     const [workHistory, setWorkHistory] = useState<WorkEntry[]>([]);
-
     const [lifeEvents, setLifeEvents] = useState<LifeEvent[]>([]);
-
     const [locationHistory, setLocationHistory] = useState<LocationHistory[]>([]);
 
     useEffect(() => {
@@ -145,7 +146,17 @@ export default function ProfilePage() {
         }
     };
 
+    // ... existing methods ...
+
+    // Helper for Birth Info location change
+    const handleBirthLocationChange = (field: 'country' | 'state' | 'city', value: string) => {
+        if (field === 'country') setBirthCountry(value);
+        if (field === 'state') setBirthState(value);
+        if (field === 'city') setBirthCity(value);
+    };
+
     const hasChanges = () => {
+        // ... implementation ...
         if (!originalData) return true;
 
         const currentEducation = education.filter(e => e.degree || e.institution);
@@ -295,6 +306,13 @@ export default function ProfilePage() {
         setLocationHistory(updated);
     };
 
+    // New handler for location selection in history
+    const updateLocationHistoryItem = (index: number, field: 'country' | 'state' | 'city', value: string) => {
+        const updated = [...locationHistory];
+        updated[index] = { ...updated[index], [field]: value };
+        setLocationHistory(updated);
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F5F2E9' }}>
@@ -434,38 +452,14 @@ export default function ProfilePage() {
                                     />
                                 </div>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div className="space-y-2">
-                                    <Label htmlFor="birthCity" className="font-medium text-gray-700">City</Label>
-                                    <Input
-                                        id="birthCity"
-                                        value={birthCity}
-                                        onChange={(e) => setBirthCity(e.target.value)}
-                                        placeholder="Mumbai"
-                                        className="h-11 border-gray-200 focus:border-[var(--color-kutumba-green)] focus:ring-[var(--color-kutumba-green)] transition-all bg-gray-50/50"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="birthState" className="font-medium text-gray-700">State</Label>
-                                    <Input
-                                        id="birthState"
-                                        value={birthState}
-                                        onChange={(e) => setBirthState(e.target.value)}
-                                        placeholder="Maharashtra"
-                                        className="h-11 border-gray-200 focus:border-[var(--color-kutumba-green)] focus:ring-[var(--color-kutumba-green)] transition-all bg-gray-50/50"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="birthCountry" className="font-medium text-gray-700">Country</Label>
-                                    <Input
-                                        id="birthCountry"
-                                        value={birthCountry}
-                                        onChange={(e) => setBirthCountry(e.target.value)}
-                                        placeholder="India"
-                                        className="h-11 border-gray-200 focus:border-[var(--color-kutumba-green)] focus:ring-[var(--color-kutumba-green)] transition-all bg-gray-50/50"
-                                    />
-                                </div>
-                            </div>
+
+                            <LocationSelector
+                                country={birthCountry}
+                                state={birthState}
+                                city={birthCity}
+                                onLocationChange={handleBirthLocationChange}
+                                labels={{ country: 'Country', state: 'State', city: 'City' }}
+                            />
                         </CardContent>
                     </Card>
 
@@ -778,31 +772,13 @@ export default function ProfilePage() {
                                                 className="bg-white"
                                             />
                                         </div>
-                                        <div className="space-y-2">
-                                            <Label className="font-medium text-gray-700">City</Label>
-                                            <Input
-                                                value={loc.city}
-                                                onChange={(e) => updateLocation(index, 'city', e.target.value)}
-                                                placeholder="Mumbai"
-                                                className="bg-white"
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label className="font-medium text-gray-700">State</Label>
-                                            <Input
-                                                value={loc.state}
-                                                onChange={(e) => updateLocation(index, 'state', e.target.value)}
-                                                placeholder="Maharashtra"
-                                                className="bg-white"
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label className="font-medium text-gray-700">Country</Label>
-                                            <Input
-                                                value={loc.country}
-                                                onChange={(e) => updateLocation(index, 'country', e.target.value)}
-                                                placeholder="India"
-                                                className="bg-white"
+
+                                        <div className="md:col-span-2">
+                                            <LocationSelector
+                                                country={loc.country}
+                                                state={loc.state}
+                                                city={loc.city}
+                                                onLocationChange={(field, value) => updateLocationHistoryItem(index, field, value)}
                                             />
                                         </div>
                                         <div className="md:col-span-2 space-y-2">
