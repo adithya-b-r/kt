@@ -4,9 +4,9 @@ interface YourProgressProps {
   familyMembersCount: number;
 }
 
-const YourProgress = ({ familyMembersCount }: YourProgressProps) => {
-  const freeLimit = 25;
-  const remaining = freeLimit - familyMembersCount;
+const YourProgress = ({ familyMembersCount, user }: { familyMembersCount: number; user: any }) => {
+  const limit = user?.tree_limit || 100;
+  const remaining = Math.max(0, limit - familyMembersCount);
 
   return (
     <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
@@ -23,8 +23,8 @@ const YourProgress = ({ familyMembersCount }: YourProgressProps) => {
             <div className="text-xs sm:text-sm text-gray-600">Family Members</div>
           </div>
           <div className="p-2 sm:p-4 border border-gray-200 rounded-lg">
-            <div className="text-lg sm:text-2xl font-bold" style={{ color: '#64303A' }}>{freeLimit}</div>
-            <div className="text-xs sm:text-sm text-gray-600">Free Limit</div>
+            <div className="text-lg sm:text-2xl font-bold" style={{ color: '#64303A' }}>{limit}</div>
+            <div className="text-xs sm:text-sm text-gray-600">{user?.plan_type === 'pro' ? 'Pro Limit' : 'Free Limit'}</div>
           </div>
           <div className="p-2 sm:p-4 border border-gray-200 rounded-lg">
             <div className="text-lg sm:text-2xl font-bold" style={{ color: '#64303A' }}>{remaining}</div>

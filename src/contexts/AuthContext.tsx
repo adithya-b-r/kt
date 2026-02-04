@@ -9,6 +9,9 @@ interface User {
     first_name: string;
     middle_name?: string;
     last_name: string;
+    role?: 'user' | 'admin';
+    plan_type?: 'free' | 'pro';
+    tree_limit?: number;
 }
 
 interface AuthContextType {
@@ -37,11 +40,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const router = useRouter();
 
     useEffect(() => {
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-            setUser(JSON.parse(storedUser));
-        }
-        setLoading(false);
+        const initAuth = async () => {
+            const storedUser = localStorage.getItem('user');
+            if (storedUser) {
+                setUser(JSON.parse(storedUser));
+            }
+
+            try {
+                const res = await fetch('/api/auth/me');
+                if (res.ok) {
+                    const data = await res.json();
+                    setUser(data.user);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                } else if (res.status === 401) {
+                    // Token invalid/expired
+                    localStorage.removeItem('user');
+                    setUser(null);
+                }
+            } catch (error) {
+                console.error('Failed to refresh session', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        initAuth();
     }, []);
 
     const signIn = async (email: string, password: string) => {

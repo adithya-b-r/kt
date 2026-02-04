@@ -43,12 +43,22 @@ export default function Navbar() {
 
         <div className="hidden items-center gap-3 md:flex animate-in slide-in-from-right duration-500 delay-300">
           {user ? (
-            <Link
-              className="rounded-md bg-kutumba-maroon px-4 py-2 text-sm font-semibold text-white shadow-kutumba transition-all duration-300 hover:bg-kutumba-maroon/90 hover:shadow-lg hover:scale-105 active:scale-95"
-              href="/dashboard"
-            >
-              Dashboard
-            </Link>
+            <>
+              {user.role === 'admin' && (
+                <Link
+                  className="text-sm font-semibold text-kutumba-dark-text transition-colors duration-300 hover:text-kutumba-maroon"
+                  href="/admin"
+                >
+                  Admin Panel
+                </Link>
+              )}
+              <Link
+                className="rounded-md bg-kutumba-maroon px-4 py-2 text-sm font-semibold text-white shadow-kutumba transition-all duration-300 hover:bg-kutumba-maroon/90 hover:shadow-lg hover:scale-105 active:scale-95"
+                href="/dashboard"
+              >
+                Dashboard
+              </Link>
+            </>
           ) : (
             <>
               <Link className="text-sm font-semibold text-kutumba-dark-text transition-colors duration-300 hover:text-kutumba-maroon" href="/login">
@@ -80,49 +90,61 @@ export default function Navbar() {
         </button>
       </div>
 
-      {isOpen && (
-        <div className="border-t border-kutumba-border bg-white md:hidden animate-in slide-in-from-top duration-300">
-          <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-6 text-sm font-semibold items-center text-center">
-            <Link className="text-kutumba-dark-text transition-colors duration-300 hover:text-kutumba-maroon relative group" href="#features">
-              Features
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-kutumba-maroon transition-all duration-300 group-hover:w-full"></span>
-            </Link>
-            <Link className="text-kutumba-dark-text transition-colors duration-300 hover:text-kutumba-maroon relative group" href="#pricing">
-              Pricing
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-kutumba-maroon transition-all duration-300 group-hover:w-full"></span>
-            </Link>
-            <Link className="text-kutumba-dark-text transition-colors duration-300 hover:text-kutumba-maroon relative group" href="#about">
-              About
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-kutumba-maroon transition-all duration-300 group-hover:w-full"></span>
-            </Link>
-            <div className="flex w-full flex-col gap-2 pt-3">
-              {user ? (
-                <Link
-                  className="w-full rounded-md bg-kutumba-maroon px-4 py-3 text-sm font-semibold text-white shadow-kutumba transition-all duration-300 hover:bg-kutumba-maroon/90 hover:shadow-lg hover:scale-105 active:scale-95"
-                  href="/dashboard"
-                >
-                  Dashboard
-                </Link>
-              ) : (
-                <>
-                  <Link
-                    className="w-full rounded-md border border-kutumba-border px-4 py-3 text-sm font-semibold text-kutumba-dark-text transition-all duration-300 hover:text-kutumba-maroon hover:bg-kutumba-maroon/10"
-                    href="/login"
-                  >
-                    Login
-                  </Link>
-                  <Link
-                    className="w-full rounded-md bg-kutumba-maroon px-4 py-3 text-sm font-semibold text-white shadow-kutumba transition-all duration-300 hover:bg-kutumba-maroon/90 hover:shadow-lg hover:scale-105 active:scale-95"
-                    href="/register"
-                  >
-                    Start Free
-                  </Link>
-                </>
-              )}
+      {
+        isOpen && (
+          <div className="border-t border-kutumba-border bg-white md:hidden animate-in slide-in-from-top duration-300">
+            <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-6 text-sm font-semibold items-center text-center">
+              <Link className="text-kutumba-dark-text transition-colors duration-300 hover:text-kutumba-maroon relative group" href="#features">
+                Features
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-kutumba-maroon transition-all duration-300 group-hover:w-full"></span>
+              </Link>
+              <Link className="text-kutumba-dark-text transition-colors duration-300 hover:text-kutumba-maroon relative group" href="#pricing">
+                Pricing
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-kutumba-maroon transition-all duration-300 group-hover:w-full"></span>
+              </Link>
+              <Link className="text-kutumba-dark-text transition-colors duration-300 hover:text-kutumba-maroon relative group" href="#about">
+                About
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-kutumba-maroon transition-all duration-300 group-hover:w-full"></span>
+              </Link>
+              <div className="flex w-full flex-col gap-2 pt-3">
+                {user ? (
+                  <>
+                    {user.role === 'admin' && (
+                      <Link
+                        className="w-full rounded-md border border-kutumba-border px-4 py-3 text-sm font-semibold text-kutumba-dark-text transition-all duration-300 hover:text-kutumba-maroon hover:bg-kutumba-maroon/10"
+                        href="/admin"
+                      >
+                        Admin Panel
+                      </Link>
+                    )}
+                    <Link
+                      className="w-full rounded-md bg-kutumba-maroon px-4 py-3 text-sm font-semibold text-white shadow-kutumba transition-all duration-300 hover:bg-kutumba-maroon/90 hover:shadow-lg hover:scale-105 active:scale-95"
+                      href="/dashboard"
+                    >
+                      Dashboard
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      className="w-full rounded-md border border-kutumba-border px-4 py-3 text-sm font-semibold text-kutumba-dark-text transition-all duration-300 hover:text-kutumba-maroon hover:bg-kutumba-maroon/10"
+                      href="/login"
+                    >
+                      Login
+                    </Link>
+                    <Link
+                      className="w-full rounded-md bg-kutumba-maroon px-4 py-3 text-sm font-semibold text-white shadow-kutumba transition-all duration-300 hover:bg-kutumba-maroon/90 hover:shadow-lg hover:scale-105 active:scale-95"
+                      href="/register"
+                    >
+                      Start Free
+                    </Link>
+                  </>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </nav>
+        )
+      }
+    </nav >
   );
 }

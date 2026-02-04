@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 
 const Dashboard = () => {
   const { user } = useAuth();
-  const [familyTrees, setFamilyTrees] = useState<any[]>([]); 
+  const [familyTrees, setFamilyTrees] = useState<any[]>([]);
   const [familyMembers, setFamilyMembers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -112,6 +112,7 @@ const Dashboard = () => {
             familyMembers={familyMembers}
             loading={loading}
             onCreateTree={handleCreateTree}
+            user={user}
           />
           <RightSection />
         </div>

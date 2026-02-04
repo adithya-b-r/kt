@@ -63,6 +63,11 @@ export interface IUser {
     
     created_at: Date;
     updated_at: Date;
+
+    // Admin / Plan Fields
+    role: 'user' | 'admin';
+    plan_type: 'free' | 'pro';
+    tree_limit: number;
 }
 
 const LocationHistorySchema = new Schema({
@@ -124,6 +129,11 @@ const UserSchema = new Schema<IUser>({
     
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now },
+
+    // Admin Fields
+    role: { type: String, enum: ['user', 'admin'], default: 'user' },
+    plan_type: { type: String, enum: ['free', 'pro'], default: 'free' },
+    tree_limit: { type: Number, default: 100 },
 });
 
 const User: Model<IUser> = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);

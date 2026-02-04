@@ -18,7 +18,7 @@ const DashboardHeader = () => {
       toast.error('Failed to logout');
     }
   };
-  
+
   return (
     <header className="border-b border-gray-200 bg-white">
       <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
@@ -42,8 +42,8 @@ const DashboardHeader = () => {
             <p className="text-xs sm:text-sm text-gray-600 truncate">Build and explore your family heritage</p>
           </div>
           <div className="flex items-center gap-1 sm:gap-3 shrink-0">
-            <div className="hidden sm:block px-3 py-1 border rounded-full text-xs sm:text-sm font-medium" style={{ borderColor: '#64303A', color: '#64303A' }}>
-              Free Plan
+            <div className={`hidden sm:block px-3 py-1 border rounded-full text-xs sm:text-sm font-medium ${user?.plan_type === 'pro' ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : ''}`} style={user?.plan_type === 'pro' ? {} : { borderColor: '#64303A', color: '#64303A' }}>
+              {user?.plan_type === 'pro' ? 'Pro Plan' : 'Free Plan'}
             </div>
             <Link
               href="/profile"

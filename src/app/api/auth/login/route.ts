@@ -51,6 +51,9 @@ export async function POST(request: Request) {
             first_name: user.first_name,
             last_name: user.last_name,
             email: user.email,
+            role: user.role,
+            plan_type: user.plan_type,
+            tree_limit: user.tree_limit,
         };
 
         const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '7d' });

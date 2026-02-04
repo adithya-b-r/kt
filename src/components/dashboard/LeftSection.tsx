@@ -8,20 +8,21 @@ interface LeftSectionProps {
   familyMembers: any[];
   loading: boolean;
   onCreateTree: () => void;
+  user: any;
 }
 
-const LeftSection = ({ familyTree, familyMembers, loading, onCreateTree }: LeftSectionProps) => {
+const LeftSection = ({ familyTree, familyMembers, loading, onCreateTree, user }: LeftSectionProps) => {
   return (
     <div className="lg:col-span-8 space-y-4 sm:space-y-8">
       <QuickActions familyTree={familyTree} />
       <Phase2Features />
-      <FamilyTreeHero 
-        familyTree={familyTree} 
-        familyMembers={familyMembers} 
+      <FamilyTreeHero
+        familyTree={familyTree}
+        familyMembers={familyMembers}
         loading={loading}
         onCreateTree={onCreateTree}
       />
-      <YourProgress familyMembersCount={familyMembers.length} />
+      <YourProgress familyMembersCount={familyMembers.length} user={user} />
     </div>
   );
 };

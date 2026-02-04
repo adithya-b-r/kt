@@ -144,8 +144,9 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
             return;
         }
 
-        if (familyMembers.length >= 25) {
-            toast.error('Free plan limit reached (25 members). Premium coming soon!');
+        const limit = user?.tree_limit || 100;
+        if (familyMembers.length >= limit) {
+            toast.error(`Plan limit reached (${limit} members). Upgrade to Pro for more!`);
             return;
         }
 
@@ -641,8 +642,8 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
                                 <p className="text-xs text-gray-500 font-medium truncate flex items-center gap-1.5 mt-0.5">
                                     <Users className="h-3 w-3" />
                                     <span>{familyMembers.length} members</span>
-                                    {familyMembers.length >= 25 && (
-                                        <span className="text-amber-600 ml-1 font-semibold text-[10px] bg-amber-50 px-1.5 py-0.5 rounded-sm border border-amber-100 uppercase tracking-wider">Free Limit</span>
+                                    {user?.tree_limit && familyMembers.length >= user.tree_limit && (
+                                        <span className="text-amber-600 ml-1 font-semibold text-[10px] bg-amber-50 px-1.5 py-0.5 rounded-sm border border-amber-100 uppercase tracking-wider">Limit Reached</span>
                                     )}
                                 </p>
                             </div>

@@ -52,6 +52,10 @@ export async function POST(request: Request) {
             middle_name: newUser.middle_name,
             last_name: newUser.last_name,
             email: newUser.email,
+            role: 'user',
+            plan_type: 'free',
+
+            tree_limit: 100, // Default limit for new users
         };
 
         const token = jwt.sign({ userId: newUser._id }, JWT_SECRET, { expiresIn: '7d' });
