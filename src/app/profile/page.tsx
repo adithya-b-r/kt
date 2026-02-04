@@ -308,9 +308,12 @@ export default function ProfilePage() {
 
     // New handler for location selection in history
     const updateLocationHistoryItem = (index: number, field: 'country' | 'state' | 'city', value: string) => {
-        const updated = [...locationHistory];
-        updated[index] = { ...updated[index], [field]: value };
-        setLocationHistory(updated);
+        console.log(`Updating location history at index ${index}: ${field} -> ${value}`);
+        setLocationHistory(prev => {
+            const updated = [...prev];
+            updated[index] = { ...updated[index], [field]: value };
+            return updated;
+        });
     };
 
     if (loading) {

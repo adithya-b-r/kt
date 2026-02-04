@@ -32,42 +32,24 @@ interface LocationSelectorProps {
 }
 
 export function LocationSelector({ country, state, city, onLocationChange, labels, layout = 'grid' }: LocationSelectorProps) {
-    const [selectedCountryCode, setSelectedCountryCode] = useState('');
-    const [selectedStateCode, setSelectedStateCode] = useState('');
-
     const [openCountry, setOpenCountry] = useState(false);
     const [openState, setOpenState] = useState(false);
     const [openCity, setOpenCity] = useState(false);
 
     const countries = Country.getAllCountries();
-    const states = selectedCountryCode ? State.getStatesOfCountry(selectedCountryCode) : [];
-    const cities = selectedStateCode ? City.getCitiesOfState(selectedCountryCode, selectedStateCode) : [];
 
-    useEffect(() => {
-        if (country) {
-            const countryObj = countries.find(c => c.name === country);
-            if (countryObj && countryObj.isoCode !== selectedCountryCode) {
-                setSelectedCountryCode(countryObj.isoCode);
-            }
-        } else {
-            setSelectedCountryCode('');
-        }
-    }, [country]);
+    // Derive codes directly from props to ensure single source of truth
+    const countryObj = countries.find(c => c.name === country);
+    const countryCode = countryObj ? countryObj.isoCode : '';
 
-    useEffect(() => {
-        if (state && selectedCountryCode) {
-            const stateObj = State.getStatesOfCountry(selectedCountryCode).find(s => s.name === state);
-            if (stateObj && stateObj.isoCode !== selectedStateCode) {
-                setSelectedStateCode(stateObj.isoCode);
-            }
-        } else if (!state) {
-            setSelectedStateCode('');
-        }
-    }, [state, selectedCountryCode]);
+    const states = countryCode ? State.getStatesOfCountry(countryCode) : [];
+    const stateObj = states.find(s => s.name === state);
+    const stateCode = stateObj ? stateObj.isoCode : '';
+
+    const cities = stateCode ? City.getCitiesOfState(countryCode, stateCode) : [];
 
     const handleCountrySelect = (isoCode: string, name: string) => {
-        setSelectedCountryCode(isoCode);
-        setSelectedStateCode('');
+        console.log('LocationSelector: Country selected:', name, isoCode);
         onLocationChange('country', name);
         onLocationChange('state', '');
         onLocationChange('city', '');
@@ -75,7 +57,6 @@ export function LocationSelector({ country, state, city, onLocationChange, label
     };
 
     const handleStateSelect = (isoCode: string, name: string) => {
-        setSelectedStateCode(isoCode);
         onLocationChange('state', name);
         onLocationChange('city', '');
         setOpenState(false);
@@ -96,6 +77,7 @@ export function LocationSelector({ country, state, city, onLocationChange, label
                 <Popover open={openCountry} onOpenChange={setOpenCountry}>
                     <PopoverTrigger asChild>
                         <Button
+                            type="button"
                             variant="outline"
                             role="combobox"
                             aria-expanded={openCountry}
@@ -115,7 +97,9 @@ export function LocationSelector({ country, state, city, onLocationChange, label
                                         <CommandItem
                                             key={c.isoCode}
                                             value={c.name}
-                                            onSelect={() => handleCountrySelect(c.isoCode, c.name)}
+                                            onSelect={() => {
+                                                handleCountrySelect(c.isoCode, c.name);
+                                            }}
                                         >
                                             <Check
                                                 className={cn(
@@ -139,10 +123,11 @@ export function LocationSelector({ country, state, city, onLocationChange, label
                 <Popover open={openState} onOpenChange={setOpenState}>
                     <PopoverTrigger asChild>
                         <Button
+                            type="button"
                             variant="outline"
                             role="combobox"
                             aria-expanded={openState}
-                            disabled={!selectedCountryCode}
+                            disabled={!countryCode}
                             className="h-11 justify-between border-gray-200 focus:border-[var(--color-kutumba-teal)] focus:ring-[var(--color-kutumba-teal)] bg-gray-50/50"
                         >
                             {state ? state : "Select State"}
@@ -159,7 +144,9 @@ export function LocationSelector({ country, state, city, onLocationChange, label
                                         <CommandItem
                                             key={s.isoCode}
                                             value={s.name}
-                                            onSelect={() => handleStateSelect(s.isoCode, s.name)}
+                                            onSelect={() => {
+                                                handleStateSelect(s.isoCode, s.name);
+                                            }}
                                         >
                                             <Check
                                                 className={cn(
@@ -183,10 +170,11 @@ export function LocationSelector({ country, state, city, onLocationChange, label
                 <Popover open={openCity} onOpenChange={setOpenCity}>
                     <PopoverTrigger asChild>
                         <Button
+                            type="button"
                             variant="outline"
                             role="combobox"
                             aria-expanded={openCity}
-                            disabled={!selectedStateCode}
+                            disabled={!stateCode}
                             className="h-11 justify-between border-gray-200 focus:border-[var(--color-kutumba-teal)] focus:ring-[var(--color-kutumba-teal)] bg-gray-50/50"
                         >
                             {city ? city : "Select City"}
@@ -203,7 +191,9 @@ export function LocationSelector({ country, state, city, onLocationChange, label
                                         <CommandItem
                                             key={c.name}
                                             value={c.name}
-                                            onSelect={() => handleCitySelect(c.name)}
+                                            onSelect={() => {
+                                                handleCitySelect(c.name);
+                                            }}
                                         >
                                             <Check
                                                 className={cn(
