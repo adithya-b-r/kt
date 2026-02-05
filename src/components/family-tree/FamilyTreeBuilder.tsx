@@ -932,6 +932,7 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
                                 value={newMemberData.death_date}
                                 onChange={(e) => setNewMemberData(prev => ({ ...prev, death_date: e.target.value }))}
                                 className="focus-visible:outline-none ring-transparent focus-visible:ring-0 focus-visible:border-orange-900 text-xs sm:text-sm"
+                                max={new Date().toISOString().split('T')[0]}
                             />
                         </div>
 

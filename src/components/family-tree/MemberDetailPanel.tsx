@@ -307,6 +307,7 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
                                     onChange={(e) => setEditData(prev => ({ ...prev, death_date: e.target.value }))}
                                     placeholder="Death date (if applicable)"
                                     className="focus-visible:outline-none ring-transparent focus-visible:ring-0 focus-visible:border-orange-900"
+                                    max={new Date().toISOString().split('T')[0]}
                                 />
                             </div>
 
