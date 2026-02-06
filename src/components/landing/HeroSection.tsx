@@ -89,7 +89,7 @@ export default function HeroSection() {
               {languages.map((lang) => (
                 <span
                   key={lang}
-                  className="text-sm text-kutumba-muted bg-kutumba-light-teal/10 px-3 py-1 rounded-full"
+                  className="text-sm blur-xs select-none text-kutumba-muted bg-kutumba-light-teal/10 px-3 py-1 rounded-full"
                 >
                   {lang}
                 </span>
