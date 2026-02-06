@@ -66,13 +66,14 @@ export function UserTable({ users, onEdit, onSearch }: UserTableProps) {
               <TableHead className="font-semibold text-slate-500">Created</TableHead>
               <TableHead className="font-semibold text-slate-500">Last Active</TableHead>
               <TableHead className="font-semibold text-slate-500">IP</TableHead>
+              <TableHead className="font-semibold text-slate-500">Location</TableHead>
               <TableHead className="w-[50px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {users.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="h-32 text-center text-slate-400">
+                <TableCell colSpan={9} className="h-32 text-center text-slate-400">
                   No users found.
                 </TableCell>
               </TableRow>
@@ -119,6 +120,9 @@ export function UserTable({ users, onEdit, onSearch }: UserTableProps) {
                   </TableCell>
                   <TableCell className="text-xs font-mono text-slate-500">
                     {user.last_ip || '-'}
+                  </TableCell>
+                  <TableCell className="text-xs text-slate-500">
+                    {user.last_location || '-'}
                   </TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>

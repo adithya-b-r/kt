@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import connectToDatabase from '@/lib/db';
 import User from '@/models/User';
+import { getLocationFromIp } from '@/lib/location';
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 
@@ -46,12 +47,15 @@ export async function POST(request: Request) {
             );
         }
 
-        let ip = request.headers.get('x-forwarded-for') || 'Unknown';
-        if (ip === '::1') ip = '127.0.0.1 (Localhost)';
+        const ip = request.headers.get('x-forwarded-for') || 'Unknown';
+        const finalIp = ip === '::1' ? '127.0.0.1 (Localhost)' : ip;
         
         // Update user tracking info
+        const location = await getLocationFromIp(ip);
+        
         user.last_login = new Date();
-        user.last_ip = ip;
+        user.last_ip = finalIp;
+        user.last_location = location;
         await user.save();
 
         const userResponse = {

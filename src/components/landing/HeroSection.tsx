@@ -39,7 +39,7 @@ export default function HeroSection() {
 
           <div className="flex flex-wrap gap-3">
             <span className="bg-kutumba-green/10 text-kutumba-green border border-kutumba-green/30 px-3 py-1 rounded-full text-sm font-medium">
-              ✓ 25 Free Members
+              ✓ 75 Free Members
             </span>
             <span className="bg-kutumba-teal/10 text-kutumba-teal border border-kutumba-teal/30 px-3 py-1 rounded-full text-sm font-medium">
               ✓ 28 Indian States
@@ -87,7 +87,7 @@ export default function HeroSection() {
                 <h3 className="text-2xl font-bold text-kutumba-dark-text mb-2">
                   Start building your family tree now
                 </h3>
-                <p className="text-kutumba-muted">Begin with 25 family members for Free</p>
+                <p className="text-kutumba-muted">Begin with 75 family members for Free</p>
               </div>
 
               <div className="space-y-4">

@@ -19,7 +19,7 @@ const footerSections = {
   features: {
     title: "Features",
     links: [
-      "Free 25 Members",
+      "Free 75 Members",
       "Cultural Festivals",
       "Indian States Coverage",
       "Photo Storage",

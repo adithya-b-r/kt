@@ -71,6 +71,7 @@ export interface IUser {
 
     last_login?: Date;
     last_ip?: string;
+    last_location?: string;
 }
 
 const LocationHistorySchema = new Schema({
@@ -136,10 +137,11 @@ const UserSchema = new Schema<IUser>({
     // Admin Fields
     role: { type: String, enum: ['user', 'admin'], default: 'user' },
     plan_type: { type: String, enum: ['free', 'pro'], default: 'free' },
-    tree_limit: { type: Number, default: 100 },
+    tree_limit: { type: Number, default: 75 },
     
     last_login: { type: Date },
     last_ip: { type: String },
+    last_location: { type: String },
 });
 
 // Prevent Mongoose OverwriteModelError in development by checking if model exists
