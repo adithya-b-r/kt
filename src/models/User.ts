@@ -27,21 +27,22 @@ export interface IUser {
     email: string;
     password_hash: string;
     phone?: string;
-    
+
     date_of_birth?: Date;
     place_of_birth?: string;
     birth_city?: string;
     birth_state?: string;
     birth_country?: string;
     current_location?: string;
-    
+    religion?: string;
+
     education?: Array<{
         degree?: string;
         institution?: string;
         year?: number;
         location?: string;
     }>;
-    
+
 
     work_history?: Array<{
         company?: string;
@@ -50,17 +51,17 @@ export interface IUser {
         end_year?: number;
         location?: string;
     }>;
-    
+
 
     life_events?: ILifeEvent[];
-    
+
     location_history?: ILocationHistory[];
-    
+
     profile_completed?: boolean;
 
     generated_story?: string;
     story_generated_at?: Date;
-    
+
     created_at: Date;
     updated_at: Date;
 
@@ -100,21 +101,22 @@ const UserSchema = new Schema<IUser>({
     email: { type: String, required: true, unique: true },
     password_hash: { type: String, required: true },
     phone: { type: String },
-    
+
     date_of_birth: { type: Date },
     place_of_birth: { type: String },
     birth_city: { type: String },
     birth_state: { type: String },
     birth_country: { type: String },
     current_location: { type: String },
-    
+    religion: { type: String },
+
     education: [{
         degree: { type: String },
         institution: { type: String },
         year: { type: Number },
         location: { type: String },
     }],
-    
+
     work_history: [{
         company: { type: String },
         position: { type: String },
@@ -122,15 +124,15 @@ const UserSchema = new Schema<IUser>({
         end_year: { type: Number },
         location: { type: String },
     }],
-    
+
     life_events: [LifeEventSchema],
     location_history: [LocationHistorySchema],
-    
+
     profile_completed: { type: Boolean, default: false },
 
     generated_story: { type: String },
     story_generated_at: { type: Date },
-    
+
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now },
 

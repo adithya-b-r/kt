@@ -39,7 +39,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
 import { toast } from '@/components/ui/sonner';
-import { jsPDF } from 'jspdf';
+import { jsPDF, GState } from 'jspdf';
 import {
     CommandDialog,
     CommandInput,
@@ -391,7 +391,7 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
         const toastId = toast.loading('Generating PDF...');
 
         try {
-            const { dataUrl, width, height } = await treeRef.current.getExportData({ scale: 0.5 });
+            const { dataUrl, width, height } = await treeRef.current.getExportData({ scale: 1.0 });
 
             const pdf = new jsPDF({
                 orientation: width > height ? 'landscape' : 'portrait',
@@ -400,6 +400,40 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
             });
 
             pdf.addImage(dataUrl, 'PNG', 0, 0, width, height);
+
+            // Add Watermark for Free Plan
+            if (user?.plan_type !== 'pro') {
+                pdf.saveGraphicsState(); // Save state before changes
+
+                pdf.setTextColor(150, 150, 150); // Gray
+                pdf.setFont('helvetica', 'bold'); // Bold
+
+                // Dynamic font size: ~1/10th of the width, ensuring it's at least 40px
+                const fontSize = Math.max(40, Math.floor(width / 10));
+                pdf.setFontSize(fontSize);
+
+                // Set transparency
+                try {
+                    const gState = new GState({ opacity: 0.4 });
+                    pdf.setGState(gState);
+                } catch (e) {
+                    console.warn("GState not supported or failed", e);
+                }
+
+                // Calculate diagonal angle to center exactly from corner to corner (Bottom-Left to Top-Right)
+                const angle = Math.atan(height / width) * (180 / Math.PI);
+
+                // Manual centering
+                const angleRad = angle * (Math.PI / 180);
+                const offset = fontSize / 3;
+                const x = width / 2 + offset * Math.sin(angleRad);
+                const y = height / 2 - offset * Math.cos(angleRad);
+
+                pdf.text('Kutumba Tree', x, y, { align: 'center', angle: angle });
+                pdf.restoreGraphicsState(); // Restore state
+            }
+
+
             pdf.save(`${familyTree?.name || 'My_Family_Tree'}.pdf`);
 
             toast.dismiss(toastId);
@@ -417,10 +451,66 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
         const toastId = toast.loading('Generating Image...');
 
         try {
-            const { dataUrl } = await treeRef.current.getExportData();
+            const { dataUrl, width, height } = await treeRef.current.getExportData();
+
+            let finalDataUrl = dataUrl;
+
+            // Add Watermark for Free Plan (Process via Canvas)
+            if (user?.plan_type !== 'pro') {
+                try {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+
+                    if (ctx) {
+                        // Load image to draw it on canvas
+                        const img = new Image();
+                        img.src = dataUrl;
+                        await new Promise((resolve) => {
+                            img.onload = resolve;
+                        });
+
+                        // Use actual image dimensions to avoid clipping on high-DPI screens
+                        canvas.width = img.naturalWidth;
+                        canvas.height = img.naturalHeight;
+
+                        // Draw original image
+                        ctx.drawImage(img, 0, 0);
+
+                        // Configure Watermark Styles
+                        ctx.fillStyle = 'rgba(150, 150, 150, 0.4)'; // Gray with 40% opacity
+                        // Font size logic: ~1/10th of width, min 40px
+                        const fontSize = Math.max(40, Math.floor(canvas.width / 10));
+                        ctx.font = `bold ${fontSize}px Helvetica, Arial, sans-serif`;
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+
+                        // Calculate visual center and rotation
+                        const angleRad = Math.atan(canvas.height / canvas.width);
+                        const cx = canvas.width / 2;
+                        const cy = canvas.height / 2;
+
+                        // Rotate and Draw
+                        ctx.save();
+                        ctx.translate(cx, cy);
+                        // Standard math: atan(y/x). 
+                        // Top-Left (0,0) to Bottom-Right (w,h) means positive y is down.
+                        // We want "Bottom-Left" (visual) to "Top-Right" (visual).
+                        // That means vector (1, -1) visually, but in canvas coords (1, -1).
+                        // Actually, let's just stick to the angle calculation that works.
+                        ctx.rotate(Math.atan(-canvas.height / canvas.width));
+
+                        ctx.fillText('Kutumba Tree', 0, 0);
+                        ctx.restore();
+
+                        finalDataUrl = canvas.toDataURL('image/png');
+                    }
+                } catch (e) {
+                    console.error('Failed to apply watermark to image, downloading original', e);
+                }
+            }
 
             const link = document.createElement('a');
-            link.href = dataUrl;
+            link.href = finalDataUrl;
             link.download = `${familyTree?.name || 'My_Family_Tree'}.png`;
             document.body.appendChild(link);
             link.click();

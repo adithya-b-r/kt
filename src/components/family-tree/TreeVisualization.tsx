@@ -487,47 +487,82 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
         getExportData: async (options) => {
             if (!contentRef.current) throw new Error('Tree content not found');
 
-            // 1. Calculate Bounding Box of the Layout
-            // Default bounds if empty
-            let minX = 0, minY = 0, maxX = 800, maxY = 600;
-
+            // 1. Calculate Bounding Box
+            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
             const vals = Object.values(layout);
-            if (vals.length > 0) {
-                minX = Math.min(...vals.map(p => p.x));
-                maxX = Math.max(...vals.map(p => p.x + CARD_W));
-                minY = Math.min(...vals.map(p => p.y));
-                maxY = Math.max(...vals.map(p => p.y + CARD_H));
+
+            if (vals.length === 0) {
+                minX = 0; maxX = 800; minY = 0; maxY = 600;
+            } else {
+                vals.forEach(p => {
+                    if (p.x < minX) minX = p.x;
+                    if (p.x + CARD_W > maxX) maxX = p.x + CARD_W;
+                    if (p.y < minY) minY = p.y;
+                    if (p.y + CARD_H > maxY) maxY = p.y + CARD_H;
+                });
             }
 
-            // Add Padding
-            const PADDING = 50;
-            const fullWidth = maxX - minX + (PADDING * 2);
-            const fullHeight = maxY - minY + (PADDING * 2);
-
-            // 2. Generate Image with specific transform to capture everything
-            // We need to shift the content so that (minX, minY) moves to (PADDING, PADDING)
-            // And we ensure the scale is 1 (or custom if passed)
+            const PADDING = 100;
+            const fullWidth = (maxX - minX) + (PADDING * 2);
+            const fullHeight = (maxY - minY) + (PADDING * 2);
             const exportScale = options?.scale || 1.0;
 
-            // Note: toPng 'style' prop overrides the element's style during capture
-            const dataUrl = await toPng(contentRef.current, {
-                backgroundColor: '#F5F5F5',
-                width: fullWidth * exportScale,
-                height: fullHeight * exportScale,
-                style: {
-                    // Reset transform to identity, then translate to positive coordinates
-                    transform: `scale(${exportScale}) translate(${-minX + PADDING}px, ${-minY + PADDING}px)`,
-                    transformOrigin: 'top left',
-                    width: 'auto', // Allow it to expand
-                    height: 'auto'
-                }
-            });
+            // Preserve SVG State
+            const svgEl = contentRef.current.querySelector('svg');
+            const originalSvgWidth = svgEl?.getAttribute('width');
+            const originalSvgHeight = svgEl?.getAttribute('height');
 
-            return {
-                dataUrl,
-                width: fullWidth * exportScale,
-                height: fullHeight * exportScale
-            };
+            // Preserve Parent Overflow (Card) to prevent clipping during capture
+            const parentEl = containerRef.current?.parentElement;
+            const originalParentOverflow = parentEl ? parentEl.style.overflow : '';
+
+            // 3. Apply Temporary Styles for Full Visibility (Only minimum necessary on real DOM)
+            // Unlock parent to allow full expansion
+            if (parentEl) parentEl.style.overflow = 'visible';
+
+            // Resize SVG on real DOM (Minimally visible, ensures connectors render)
+            if (svgEl) {
+                svgEl.setAttribute('width', `${fullWidth}`);
+                svgEl.setAttribute('height', `${fullHeight}`);
+            }
+
+            try {
+                // Wait for repaint/reflow to ensure SVG resize is applied
+                await new Promise(resolve => setTimeout(resolve, 100));
+
+                // 4. Capture
+                const dataUrl = await toPng(contentRef.current, {
+                    backgroundColor: '#F5F5F5',
+                    width: fullWidth * exportScale,
+                    height: fullHeight * exportScale,
+                    style: {
+                        // Override styles on the CLONE to avoid "moving" the real tree
+                        transform: `translate(${-minX + PADDING}px, ${-minY + PADDING}px) scale(${exportScale})`,
+                        transformOrigin: 'top left',
+                        width: `${fullWidth}px`,
+                        height: `${fullHeight}px`,
+                        transition: 'none', // Ensure check for transition
+                        overflow: 'visible'
+                    },
+                    // Ensure fonts and images are fully loaded
+                    cacheBust: true,
+                });
+
+                return {
+                    dataUrl,
+                    width: fullWidth * exportScale,
+                    height: fullHeight * exportScale
+                };
+            } finally {
+                // 5. Restore Original State
+                if (svgEl) {
+                    if (originalSvgWidth) svgEl.setAttribute('width', originalSvgWidth);
+                    if (originalSvgHeight) svgEl.setAttribute('height', originalSvgHeight);
+                }
+                if (parentEl) {
+                    parentEl.style.overflow = originalParentOverflow;
+                }
+            }
         },
         focusNode: (memberId: string) => {
             const pos = layout[memberId];

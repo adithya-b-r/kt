@@ -59,6 +59,17 @@ interface LocationHistory {
     description: string;
 }
 
+const RELIGIONS = [
+    'Hinduism',
+    'Islam',
+    'Christianity',
+    'Sikhism',
+    'Buddhism',
+    'Jainism',
+    'Zoroastrianism',
+    'Judaism'
+];
+
 export default function ProfilePage() {
     const { user, updateUser } = useAuth();
     const router = useRouter();
@@ -78,6 +89,8 @@ export default function ProfilePage() {
     const [birthState, setBirthState] = useState('');
     const [birthCountry, setBirthCountry] = useState('India');
     const [currentLocation, setCurrentLocation] = useState('');
+    const [religion, setReligion] = useState('');
+    const [isManualReligion, setIsManualReligion] = useState(false);
 
     const [education, setEducation] = useState<EducationEntry[]>([]);
 
@@ -113,6 +126,10 @@ export default function ProfilePage() {
                 setBirthState(profile.birth_state || '');
                 setBirthCountry(profile.birth_country || 'India');
                 setCurrentLocation(profile.current_location || '');
+                setReligion(profile.religion || '');
+                if (profile.religion && !RELIGIONS.some(r => r.toLowerCase() === profile.religion.toLowerCase())) {
+                    setIsManualReligion(true);
+                }
 
                 setEducation(profile.education || []);
                 setWorkHistory(profile.work_history || []);
@@ -130,6 +147,7 @@ export default function ProfilePage() {
                     birth_state: profile.birth_state || '',
                     birth_country: profile.birth_country || 'India',
                     current_location: profile.current_location || '',
+                    religion: profile.religion || '',
                     education: JSON.stringify((profile.education || []).filter((e: any) => e.degree || e.institution)),
                     work_history: JSON.stringify((profile.work_history || []).filter((w: any) => w.company || w.position)),
                     life_events: JSON.stringify((profile.life_events || []).filter((e: any) => e.title)),
@@ -177,6 +195,7 @@ export default function ProfilePage() {
             birthState !== originalData.birth_state ||
             birthCountry !== originalData.birth_country ||
             currentLocation !== originalData.current_location ||
+            religion !== originalData.religion ||
             JSON.stringify(currentEducation) !== originalData.education ||
             JSON.stringify(currentWorkHistory) !== originalData.work_history ||
             JSON.stringify(currentLifeEvents) !== originalData.life_events ||
@@ -207,6 +226,7 @@ export default function ProfilePage() {
                     birth_state: birthState,
                     birth_country: birthCountry,
                     current_location: currentLocation,
+                    religion: religion,
                     education: education.filter(e => e.degree || e.institution),
                     work_history: workHistory.filter(w => w.company || w.position),
                     life_events: lifeEvents.filter(e => e.title),
@@ -409,15 +429,52 @@ export default function ProfilePage() {
                                     />
                                 </div>
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="phone" className="font-medium text-gray-700">Phone Number</Label>
-                                <Input
-                                    id="phone"
-                                    value={phone}
-                                    onChange={(e) => setPhone(e.target.value)}
-                                    placeholder="+91 9876543210"
-                                    className="h-11 border-gray-200 focus:border-[var(--color-kutumba-teal)] focus:ring-[var(--color-kutumba-teal)] transition-all bg-gray-50/50 max-w-md"
-                                />
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <Label htmlFor="phone" className="font-medium text-gray-700">Phone Number</Label>
+                                    <Input
+                                        id="phone"
+                                        value={phone}
+                                        onChange={(e) => setPhone(e.target.value)}
+                                        placeholder="+91 9876543210"
+                                        className="h-11 border-gray-200 focus:border-[var(--color-kutumba-teal)] focus:ring-[var(--color-kutumba-teal)] transition-all bg-gray-50/50"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="religion" className="font-medium text-gray-700">Religion</Label>
+                                    <div className="space-y-2">
+                                        <Select
+                                            value={isManualReligion ? 'other' : (RELIGIONS.some(r => r.toLowerCase() === religion.toLowerCase()) ? religion.toLowerCase() : (religion ? 'other' : ''))}
+                                            onValueChange={(value) => {
+                                                if (value === 'other') {
+                                                    setIsManualReligion(true);
+                                                    setReligion('');
+                                                } else {
+                                                    setIsManualReligion(false);
+                                                    setReligion(RELIGIONS.find(r => r.toLowerCase() === value) || value);
+                                                }
+                                            }}
+                                        >
+                                            <SelectTrigger className="h-11 border-gray-200 focus:border-[var(--color-kutumba-teal)] focus:ring-[var(--color-kutumba-teal)] transition-all bg-gray-50/50">
+                                                <SelectValue placeholder="Select Religion" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {RELIGIONS.map((rel) => (
+                                                    <SelectItem key={rel} value={rel.toLowerCase()}>{rel}</SelectItem>
+                                                ))}
+                                                <SelectItem value="other">Other</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        {isManualReligion && (
+                                            <Input
+                                                value={religion}
+                                                onChange={(e) => setReligion(e.target.value)}
+                                                placeholder="Enter your religion"
+                                                className="h-11 border-gray-200 focus:border-[var(--color-kutumba-teal)] focus:ring-[var(--color-kutumba-teal)] transition-all bg-gray-50/50 animate-in fade-in slide-in-from-top-1 duration-200"
+                                            />
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
