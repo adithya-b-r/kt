@@ -11,7 +11,7 @@ const plans = {
     description: "Perfect for individuals starting their family history journey",
     prices: { INR: 0 },
     features: [
-      "25 family members maximum",
+      "75 family members maximum",
       "Text-only family profiles",
       "Cultural festival calendar",
       "Basic Indian name search",
@@ -70,8 +70,8 @@ export default function PricingSection() {
             <div
               key={key}
               className={`relative border-2 transition-all duration-300 rounded-2xl bg-card p-6 md:p-8 ${plan.popular
-                  ? "border-kutumba-maroon shadow-kutumba scale-105"
-                  : "border-kutumba-border hover:border-kutumba-teal/20"
+                ? "border-kutumba-maroon shadow-kutumba scale-105"
+                : "border-kutumba-border hover:border-kutumba-teal/20"
                 }`}
             >
               {plan.popular && (
@@ -113,10 +113,10 @@ export default function PricingSection() {
                 <Link
                   href={plan.isFree ? "/register" : "/register?plan=premium"}
                   className={`inline-flex items-center justify-center w-full rounded-md px-4 py-2 font-medium transition-colors ${plan.popular
-                      ? "bg-kutumba-maroon hover:bg-kutumba-maroon/90 shadow-kutumba text-white"
-                      : plan.isFree
-                        ? "bg-kutumba-green hover:bg-kutumba-green/90 text-white"
-                        : "border border-kutumba-border text-kutumba-dark-text hover:bg-kutumba-light-teal/20"
+                    ? "bg-kutumba-maroon hover:bg-kutumba-maroon/90 shadow-kutumba text-white"
+                    : plan.isFree
+                      ? "bg-kutumba-green hover:bg-kutumba-green/90 text-white"
+                      : "border border-kutumba-border text-kutumba-dark-text hover:bg-kutumba-light-teal/20"
                     }`}
                 >
                   {plan.isFree ? "Start Free Family Tree" : "Start 7-Day Free Trial"}

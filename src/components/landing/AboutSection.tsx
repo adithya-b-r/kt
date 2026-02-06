@@ -30,11 +30,11 @@ export default function AboutSection() {
 
         <div className="relative w-full h-90 rounded-2xl overflow-hidden shadow-kutumba border border-kutumba-border bg-white">
           <Image
-            src="/kutumba-tree-logo.jpg"
+            src="/kutumba-tree-logo.png"
             alt="KutumbaTree community"
             fill
-            className="object-contain p-8"
-            sizes="(min-width: 1024px) 50vw, 100vw"
+            className="object-contain p-8 scale-120"
+            sizes="(min-width: 1024px) 80vw, 100vw"
           />
         </div>
       </div>

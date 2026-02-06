@@ -14,7 +14,7 @@ export default function Navbar() {
         <Link href="/" className="flex items-center gap-2">
           <div className="h-10 w-10 rounded-lg overflow-hidden">
             <Image
-              src="/kutumba-tree-logo.jpg"
+              src="/kutumba-tree-logo.png"
               alt="Kutumba Tree Logo"
               width={40}
               height={40}
@@ -40,12 +40,22 @@ export default function Navbar() {
 
         <div className="hidden items-center gap-3 md:flex">
           {user ? (
-            <Link
-              className="rounded-md bg-kutumba-maroon px-4 py-2 text-sm font-semibold text-white shadow-kutumba hover:bg-kutumba-maroon/90"
-              href="/dashboard"
-            >
-              Dashboard
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link
+                className="rounded-md bg-kutumba-maroon px-4 py-2 text-sm font-semibold text-white shadow-kutumba hover:bg-kutumba-maroon/90"
+                href="/dashboard"
+              >
+                Dashboard
+              </Link>
+              {user.role === 'admin' && (
+                <Link
+                  className="rounded-md border border-kutumba-maroon px-4 py-2 text-sm font-semibold text-kutumba-maroon hover:bg-kutumba-maroon/5"
+                  href="/admin"
+                >
+                  Admin Panel
+                </Link>
+              )}
+            </div>
           ) : (
             <>
               <Link className="text-sm font-semibold text-kutumba-dark-text hover:text-kutumba-maroon" href="/login">
@@ -91,12 +101,22 @@ export default function Navbar() {
             </Link>
             <div className="flex w-full flex-col gap-2 pt-3">
               {user ? (
-                <Link
-                  className="w-full rounded-md bg-kutumba-maroon px-4 py-3 text-sm font-semibold text-white shadow-kutumba hover:bg-kutumba-maroon/90"
-                  href="/dashboard"
-                >
-                  Dashboard
-                </Link>
+                <>
+                  <Link
+                    className="w-full rounded-md bg-kutumba-maroon px-4 py-3 text-sm font-semibold text-white shadow-kutumba hover:bg-kutumba-maroon/90"
+                    href="/dashboard"
+                  >
+                    Dashboard
+                  </Link>
+                  {user.role === 'admin' && (
+                    <Link
+                      className="w-full rounded-md border border-kutumba-maroon px-4 py-3 text-sm font-semibold text-kutumba-maroon hover:bg-kutumba-maroon/5 bg-white text-center"
+                      href="/admin"
+                    >
+                      Admin Panel
+                    </Link>
+                  )}
+                </>
               ) : (
                 <>
                   <Link

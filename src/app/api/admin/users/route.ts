@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/db';
 import User from '@/models/User';
+import FamilyTree from '@/models/FamilyTree';
+import Member from '@/models/Member';
 import jwt from 'jsonwebtoken';
 import { cookies } from 'next/headers';
 
@@ -45,9 +47,34 @@ export async function GET(request: Request) {
             };
         }
 
-        const users = await User.find(query).select('-password_hash').sort({ created_at: -1 });
+        const users = await User.find(query).select('-password_hash').sort({ created_at: -1 }).lean();
 
-        return NextResponse.json(users);
+        // Enrich users with tree and member info
+        const enrichedUsers = await Promise.all(users.map(async (user: any) => {
+            const tree = await FamilyTree.findOne({ user_id: user._id }).select('_id updated_at').lean();
+            
+            let memberCount = 0;
+            let rootMemberName = 'N/A';
+            let treeLastUpdated = user.updated_at; // Default to user update
+
+            if (tree) {
+                memberCount = await Member.countDocuments({ tree_id: tree._id });
+                const rootMember = await Member.findOne({ tree_id: tree._id, is_root: true }).select('first_name last_name').lean();
+                if (rootMember) {
+                    rootMemberName = `${rootMember.first_name} ${rootMember.last_name}`;
+                }
+                treeLastUpdated = tree.updated_at;
+            }
+
+            return {
+                ...user,
+                memberCount,
+                rootMemberName,
+                treeLastUpdated,
+            };
+        }));
+
+        return NextResponse.json(enrichedUsers);
     } catch (error) {
         console.error('Admin API Error:', error);
         return NextResponse.json({ message: 'Internal Error' }, { status: 500 });

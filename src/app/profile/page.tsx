@@ -20,7 +20,8 @@ import {
     Plus,
     X,
     Save,
-    Loader2
+    Loader2,
+    ShieldCheck as ViewIcon
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -151,6 +152,7 @@ export default function ProfilePage() {
                     work_history: JSON.stringify((profile.work_history || []).filter((w: any) => w.company || w.position)),
                     life_events: JSON.stringify((profile.life_events || []).filter((e: any) => e.title)),
                     location_history: JSON.stringify((profile.location_history || []).filter((l: any) => l.location)),
+                    user: { last_login: profile.last_login, last_ip: profile.last_ip }
                 });
             } else if (response.status === 401) {
                 toast.error('Session expired. Please log in again.');
@@ -855,11 +857,41 @@ export default function ProfilePage() {
                             ))}
                             <Button variant="outline" onClick={addLocation} className="w-full border-dashed border-2 py-6 hover:border-[var(--color-kutumba-teal)] hover:text-[var(--color-kutumba-teal)] hover:bg-teal-50/50 transition-all text-gray-500">
                                 <Plus className="h-4 w-4 mr-2" />
-                                Add Location
+                                Add Location History
                             </Button>
                         </CardContent>
                     </Card>
-                </div>
+
+                    {/* Account Security Information (Visible to User) */}
+                    <Card className="border-0 shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden">
+                        <div className="h-2 bg-gradient-to-r from-gray-500 to-slate-800" />
+                        <CardHeader className="pb-4 border-b border-gray-100 bg-white">
+                            <CardTitle className="flex items-center gap-3 text-xl text-slate-800">
+                                <div className="p-2 bg-slate-100 rounded-full text-slate-800">
+                                    <ViewIcon className="h-5 w-5" />
+                                </div>
+                                Account Security
+                            </CardTitle>
+                            <CardDescription>Recent activity on your account</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-6 pt-6 bg-white">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-1">
+                                    <Label className="text-gray-500 text-xs uppercase tracking-wider font-semibold">Last Logged In</Label>
+                                    <div className="font-mono text-sm bg-slate-50 p-2 rounded border border-slate-100">
+                                        {originalData?.user?.last_login ? new Date(originalData.user.last_login).toLocaleString() : 'Just now'}
+                                    </div>
+                                </div>
+                                <div className="space-y-1">
+                                    <Label className="text-gray-500 text-xs uppercase tracking-wider font-semibold">IP Address</Label>
+                                    <div className="font-mono text-sm bg-slate-50 p-2 rounded border border-slate-100">
+                                        {originalData?.user?.last_ip || 'Current Session'}
+                                    </div>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div >
 
                 <div className="flex justify-end pt-6">
                     <Button
@@ -881,7 +913,7 @@ export default function ProfilePage() {
                         )}
                     </Button>
                 </div>
-            </main>
+            </main >
         </div >
     );
 }

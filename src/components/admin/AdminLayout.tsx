@@ -23,7 +23,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => router.push('/')}>
             <div className="h-8 w-8 rounded-md overflow-hidden relative">
               <Image
-                src="/kutumba-tree-logo.jpg"
+                src="/kutumba-tree-logo.png"
                 alt="Kutumba Tree Logo"
                 fill
                 className="object-cover"

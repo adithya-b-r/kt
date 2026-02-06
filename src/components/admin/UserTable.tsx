@@ -60,16 +60,20 @@ export function UserTable({ users, onEdit, onSearch }: UserTableProps) {
           <TableHeader>
             <TableRow className="border-b border-slate-100 hover:bg-transparent">
               <TableHead className="font-semibold text-slate-500">User</TableHead>
-              <TableHead className="font-semibold text-slate-500">Role</TableHead>
+              <TableHead className="font-semibold text-slate-500">Root Person</TableHead>
+              <TableHead className="font-semibold text-slate-500">Members</TableHead>
               <TableHead className="font-semibold text-slate-500">Plan</TableHead>
-              <TableHead className="text-right font-semibold text-slate-500">Tree Limit</TableHead>
+              <TableHead className="font-semibold text-slate-500">Created</TableHead>
+              <TableHead className="font-semibold text-slate-500">Last Active</TableHead>
+              <TableHead className="font-semibold text-slate-500">IP</TableHead>
+              <TableHead className="font-semibold text-slate-500">Location</TableHead>
               <TableHead className="w-[50px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {users.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="h-32 text-center text-slate-400">
+                <TableCell colSpan={9} className="h-32 text-center text-slate-400">
                   No users found.
                 </TableCell>
               </TableRow>
@@ -82,12 +86,16 @@ export function UserTable({ users, onEdit, onSearch }: UserTableProps) {
                         {user.first_name} {user.last_name}
                       </span>
                       <span className="text-xs text-slate-500">{user.email}</span>
+                      <Badge variant="outline" className="w-fit mt-1 font-normal border-slate-200 text-slate-500 bg-slate-50 text-[10px] h-5 px-1.5">
+                        {user.role}
+                      </Badge>
                     </div>
                   </TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className="font-normal border-slate-200 text-slate-600 bg-transparent">
-                      {user.role}
-                    </Badge>
+                  <TableCell className="text-sm text-slate-600">
+                    {user.rootMemberName || '-'}
+                  </TableCell>
+                  <TableCell className="text-sm text-slate-600">
+                    {user.memberCount || 0} / {user.tree_limit}
                   </TableCell>
                   <TableCell>
                     <Badge
@@ -101,8 +109,20 @@ export function UserTable({ users, onEdit, onSearch }: UserTableProps) {
                       {user.plan_type}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-right font-mono text-slate-600">
-                    {user.tree_limit}
+                  <TableCell className="text-xs text-slate-500">
+                    {new Date(user.created_at).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell className="text-xs text-slate-500">
+                    <div className="flex flex-col">
+                      <span>{user.last_login ? new Date(user.last_login).toLocaleDateString() : '-'}</span>
+                      <span className="text-[10px] opacity-70">{user.last_login ? new Date(user.last_login).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-xs font-mono text-slate-500">
+                    {user.last_ip || '-'}
+                  </TableCell>
+                  <TableCell className="text-xs text-slate-500">
+                    {user.last_location || '-'}
                   </TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>

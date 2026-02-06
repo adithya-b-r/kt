@@ -12,7 +12,7 @@ export async function GET(request: Request) {
         }
 
         await connectToDatabase();
-        const trees = await FamilyTree.find({ user_id: userId });
+        const trees = await FamilyTree.find({ user_id: userId }).sort({ created_at: 1 });
 
         return NextResponse.json(trees);
     } catch (error) {

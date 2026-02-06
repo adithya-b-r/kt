@@ -26,7 +26,7 @@ const DashboardHeader = () => {
           <Link href="/" className="group flex items-center gap-3 transition-all duration-300 hover:opacity-90">
             <div className="relative h-9 w-9 sm:h-10 sm:w-10 overflow-hidden rounded-xl shadow-sm ring-1 ring-gray-200 group-hover:shadow-md transition-shadow duration-300">
               <Image
-                src="/kutumba-tree-logo.jpg"
+                src="/kutumba-tree-logo.png"
                 alt="Kutumba Tree Logo"
                 fill
                 className="object-cover"
@@ -51,8 +51,8 @@ const DashboardHeader = () => {
             </div>
 
             <div className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-semibold shadow-sm ${user?.plan_type === 'pro'
-                ? 'bg-amber-50 border-amber-200 text-amber-700'
-                : 'bg-gray-50 border-gray-200 text-gray-600'
+              ? 'bg-amber-50 border-amber-200 text-amber-700'
+              : 'bg-gray-50 border-gray-200 text-gray-600'
               }`}>
               {user?.plan_type === 'pro' && <Sparkles className="h-3 w-3" />}
               {user?.plan_type === 'pro' ? 'PRO' : 'FREE'}

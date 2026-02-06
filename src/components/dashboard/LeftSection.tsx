@@ -15,8 +15,6 @@ interface LeftSectionProps {
 const LeftSection = ({ familyTree, familyMembers, relationships, loading, onCreateTree, user }: LeftSectionProps) => {
   return (
     <div className="lg:col-span-8 space-y-4 sm:space-y-8">
-      <QuickActions familyTree={familyTree} />
-      <Phase2Features />
       <FamilyTreeHero
         familyTree={familyTree}
         familyMembers={familyMembers}
@@ -24,6 +22,8 @@ const LeftSection = ({ familyTree, familyMembers, relationships, loading, onCrea
         loading={loading}
         onCreateTree={onCreateTree}
       />
+      <QuickActions familyTree={familyTree} />
+      <Phase2Features />
       <YourProgress familyMembersCount={familyMembers.length} user={user} />
     </div>
   );

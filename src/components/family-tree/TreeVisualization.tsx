@@ -119,11 +119,18 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
             }
             rootMember = current;
         } else {
-            // Default Root: Someone with no parents
-            rootMember = familyMembers.find(m => {
-                const pIds = parentsMap.get(m.id) || [];
-                return pIds.length === 0;
-            });
+            // Priority 1: Explicitly marked Root
+            rootMember = familyMembers.find(m => m.is_root);
+
+            // Priority 2: Someone with no parents
+            if (!rootMember) {
+                rootMember = familyMembers.find(m => {
+                    const pIds = parentsMap.get(m.id) || [];
+                    return pIds.length === 0;
+                });
+            }
+
+            // Priority 3: First in list
             if (!rootMember) rootMember = familyMembers[0];
         }
 

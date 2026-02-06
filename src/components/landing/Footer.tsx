@@ -1,4 +1,7 @@
+"use client"
+
 import Link from "next/link";
+import Image from "next/image";
 import { Globe, Mail, Phone, TreePine } from "lucide-react";
 
 const footerSections = {
@@ -16,7 +19,7 @@ const footerSections = {
   features: {
     title: "Features",
     links: [
-      "Free 25 Members",
+      "Free 75 Members",
       "Cultural Festivals",
       "Indian States Coverage",
       "Photo Storage",
@@ -50,8 +53,14 @@ export default function Footer() {
         <div className="grid lg:grid-cols-5 gap-8 mb-12">
           <div className="lg:col-span-1">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 bg-gradient-kutumba rounded-lg flex items-center justify-center">
-                <TreePine className="h-5 w-5 text-white" />
+              <div className="h-10 w-10 rounded-lg overflow-hidden">
+                <Image
+                  src="/kutumba-tree-logo.png"
+                  alt="Kutumba Tree Logo"
+                  width={40}
+                  height={40}
+                  priority
+                />
               </div>
               <span className="text-xl font-bold">KutumbaTree</span>
             </div>

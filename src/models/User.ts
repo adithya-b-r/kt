@@ -69,6 +69,10 @@ export interface IUser {
     role: 'user' | 'admin';
     plan_type: 'free' | 'pro';
     tree_limit: number;
+
+    last_login?: Date;
+    last_ip?: string;
+    last_location?: string;
 }
 
 const LocationHistorySchema = new Schema({
@@ -135,8 +139,18 @@ const UserSchema = new Schema<IUser>({
     // Admin Fields
     role: { type: String, enum: ['user', 'admin'], default: 'user' },
     plan_type: { type: String, enum: ['free', 'pro'], default: 'free' },
-    tree_limit: { type: Number, default: 100 },
+    tree_limit: { type: Number, default: 75 },
+    
+    last_login: { type: Date },
+    last_ip: { type: String },
+    last_location: { type: String },
 });
+
+// Prevent Mongoose OverwriteModelError in development by checking if model exists
+// But also allow schema updates to propagate in dev mode
+if (process.env.NODE_ENV === 'development') {
+    delete mongoose.models.User;
+}
 
 const User: Model<IUser> = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
 

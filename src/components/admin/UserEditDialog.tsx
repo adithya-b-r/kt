@@ -34,7 +34,7 @@ export function UserEditDialog({ user, open, onClose, onSave }: UserEditDialogPr
     email: '',
     role: 'user',
     plan_type: 'free',
-    tree_limit: 100,
+    tree_limit: 75,
     password: ''
   });
   const [isSaving, setIsSaving] = useState(false);
