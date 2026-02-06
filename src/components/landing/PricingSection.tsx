@@ -13,12 +13,12 @@ const plans = {
     features: [
       "75 family members maximum",
       "Text-only family profiles",
-      "Cultural festival calendar",
-      "Basic Indian name search",
       "Limited family tree export",
       "Watermarked PDF downloads",
-      "Multi-language interface",
       "Mobile app access",
+      "Multi-language interface",
+      "Basic Indian name search",
+      "Cultural festival calendar",
     ],
     popular: false,
     isFree: true,
@@ -92,8 +92,8 @@ export default function PricingSection() {
                     </>
                   ) : (
                     <>
-                      {currencies[selectedCurrency].symbol}
-                      {plan.prices[selectedCurrency]}
+                      <span className="blur-sm select-none">{currencies[selectedCurrency].symbol}
+                        {plan.prices[selectedCurrency]}</span>
                       <span className="text-lg text-kutumba-muted font-normal">/month</span>
                     </>
                   )}
@@ -102,10 +102,10 @@ export default function PricingSection() {
 
               <div className="space-y-6 mt-6">
                 <ul className="space-y-3">
-                  {plan.features.map((feature) => (
+                  {plan.features.map((feature, index) => (
                     <li key={feature} className="flex items-start gap-3">
                       <Check className="h-5 w-5 text-kutumba-teal shrink-0 mt-0.5" />
-                      <span className="text-sm">{feature}</span>
+                      <span className={`text-sm ${(plan.popular && index > 1) || (plan.isFree && index > 5) ? "blur-sm select-none" : ""}`}>{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -129,7 +129,7 @@ export default function PricingSection() {
         <div className="bg-card rounded-2xl p-8 border-2 border-kutumba-border mb-12">
           <h3 className="text-2xl font-bold text-center mb-8">What&apos;s Included</h3>
           <div className="grid md:grid-cols-3 gap-8">
-            <div>
+            <div className="blur-xs select-none">
               <h4 className="font-semibold mb-4 text-kutumba-gold">Cultural Features</h4>
               <ul className="space-y-2 text-sm text-kutumba-muted">
                 <li>• Cultural festival calendar</li>
@@ -139,7 +139,7 @@ export default function PricingSection() {
                 <li>• Traditional elements</li>
               </ul>
             </div>
-            <div>
+            <div className="blur-xs select-none">
               <h4 className="font-semibold mb-4 text-kutumba-maroon">Family Tools</h4>
               <ul className="space-y-2 text-sm text-kutumba-muted">
                 <li>• Interactive family tree builder</li>
@@ -149,7 +149,7 @@ export default function PricingSection() {
                 <li>• Family sharing (Premium)</li>
               </ul>
             </div>
-            <div>
+            <div className="blur-xs select-none">
               <h4 className="font-semibold mb-4 text-kutumba-teal">Premium Benefits</h4>
               <ul className="space-y-2 text-sm text-kutumba-muted">
                 <li>• WhatsApp sharing</li>

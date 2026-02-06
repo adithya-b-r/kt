@@ -14,11 +14,11 @@ export default function AboutSection() {
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="p-4 rounded-xl bg-white border border-kutumba-border shadow-kutumba">
               <p className="text-sm text-kutumba-muted">Families Connected</p>
-              <p className="text-2xl font-bold text-kutumba-maroon">50,000+</p>
+              <p className="text-2xl font-bold text-kutumba-maroon select-none blur-sm">50,000+</p>
             </div>
             <div className="p-4 rounded-xl bg-white border border-kutumba-border shadow-kutumba">
               <p className="text-sm text-kutumba-muted">Cultural Traditions</p>
-              <p className="text-2xl font-bold text-kutumba-teal">200+</p>
+              <p className="text-2xl font-bold text-kutumba-teal select-none blur-sm">200+</p>
             </div>
           </div>
           <div className="flex flex-wrap gap-3 text-sm text-kutumba-muted">
