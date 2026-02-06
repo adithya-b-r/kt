@@ -46,6 +46,10 @@ const Login = () => {
     setLoading(false);
   };
 
+  const handleGoogleLogin = () => {
+    window.location.href = '/api/auth/google';
+  };
+
   return (
     <div className="min-h-screen bg-[#F5F2E9] flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -57,7 +61,7 @@ const Login = () => {
         <Card className="border-2 shadow-lg" style={{ borderColor: '#d4c5cb' }}>
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
-            <CardDescription> 
+            <CardDescription>
               Sign in to continue your heritage journey
             </CardDescription>
           </CardHeader>
@@ -130,7 +134,12 @@ const Login = () => {
             </div>
 
             <div className="space-y-3">
-              <Button className="w-full border hover:bg-teal-600 hover:text-white" style={{ borderColor: '#d4c5cb' }}>
+              <Button
+                type="button"
+                onClick={handleGoogleLogin}
+                className="w-full border hover:bg-teal-600 hover:text-white"
+                style={{ borderColor: '#d4c5cb' }}
+              >
                 <Mail className="h-4 w-4 mr-2" />
                 Continue with Google
               </Button>

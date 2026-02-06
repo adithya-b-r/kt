@@ -25,7 +25,8 @@ export interface IUser {
     middle_name?: string;
     last_name: string;
     email: string;
-    password_hash: string;
+    password_hash?: string; // Optional for Google Auth
+    googleId?: string;      // Google OAuth ID
     phone?: string;
 
     date_of_birth?: Date;
@@ -43,7 +44,6 @@ export interface IUser {
         location?: string;
     }>;
 
-
     work_history?: Array<{
         company?: string;
         position?: string;
@@ -52,9 +52,7 @@ export interface IUser {
         location?: string;
     }>;
 
-
     life_events?: ILifeEvent[];
-
     location_history?: ILocationHistory[];
 
     profile_completed?: boolean;
@@ -99,7 +97,8 @@ const UserSchema = new Schema<IUser>({
     middle_name: { type: String },
     last_name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    password_hash: { type: String, required: true },
+    password_hash: { type: String, required: false }, // Optional for Google Auth users
+    googleId: { type: String, unique: true, sparse: true }, // Sparse allows multiple nulls
     phone: { type: String },
 
     date_of_birth: { type: Date },
@@ -140,7 +139,7 @@ const UserSchema = new Schema<IUser>({
     role: { type: String, enum: ['user', 'admin'], default: 'user' },
     plan_type: { type: String, enum: ['free', 'pro'], default: 'free' },
     tree_limit: { type: Number, default: 75 },
-    
+
     last_login: { type: Date },
     last_ip: { type: String },
     last_location: { type: String },

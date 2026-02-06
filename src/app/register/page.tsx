@@ -93,6 +93,10 @@ const RegisterContent = () => {
     setLoading(false);
   };
 
+  const handleGoogleLogin = () => {
+    window.location.href = '/api/auth/google';
+  };
+
   return (
     <div className="min-h-screen bg-[#F5F2E9] flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -100,7 +104,7 @@ const RegisterContent = () => {
           <ArrowLeft className="h-4 w-4" />
           Back to KutumbaTree
         </Link>
-
+        {/* ... Card Content ... */}
         <Card className="border-2 shadow-lg" style={{ borderColor: '#d4c5cb' }}>
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold" style={{ color: '#64303A' }}>Start Your Heritage Journey</CardTitle>
@@ -113,6 +117,7 @@ const RegisterContent = () => {
             <form onSubmit={handleSubmit}>
               <div className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {/* ... Inputs ... */}
                   <div>
                     <Label htmlFor="firstName">First Name</Label>
                     <Input
@@ -244,7 +249,11 @@ const RegisterContent = () => {
             </div>
 
             <div className="space-y-3">
-              <Button className="w-full border hover:bg-teal-600 hover:text-white" style={{ borderColor: '#d4c5cb' }}>
+              <Button
+                type="button"
+                onClick={handleGoogleLogin}
+                className="w-full border hover:bg-teal-600 hover:text-white" style={{ borderColor: '#d4c5cb' }}
+              >
                 <Mail className="h-4 w-4 mr-2" />
                 Sign up with Google
               </Button>
