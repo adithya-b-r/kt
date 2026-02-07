@@ -20,6 +20,7 @@ export interface Relationship {
     relationship_type: string;
     marriage_date?: string;
     divorce_date?: string;
+    nature?: 'biological' | 'adopted';
 }
 
 export interface FamilyTree {
@@ -59,7 +60,8 @@ export const useFamilyTree = (treeId: string) => {
                 person2_id: r.person2_id,
                 relationship_type: r.relationship_type,
                 marriage_date: r.marriage_date ? r.marriage_date.split('T')[0] : undefined,
-                divorce_date: r.divorce_date ? r.divorce_date.split('T')[0] : undefined
+                divorce_date: r.divorce_date ? r.divorce_date.split('T')[0] : undefined,
+                nature: r.nature
             })));
         } catch (error) {
             console.error(error);
@@ -174,7 +176,8 @@ export const useFamilyTree = (treeId: string) => {
                 person2_id: newRelData.person2_id,
                 relationship_type: newRelData.relationship_type,
                 marriage_date: newRelData.marriage_date ? newRelData.marriage_date.split('T')[0] : undefined,
-                divorce_date: newRelData.divorce_date ? newRelData.divorce_date.split('T')[0] : undefined
+                divorce_date: newRelData.divorce_date ? newRelData.divorce_date.split('T')[0] : undefined,
+                nature: newRelData.nature
             };
             setRelationships((prev) => [...prev, newRelationship]);
             toast.success('Relationship added successfully');

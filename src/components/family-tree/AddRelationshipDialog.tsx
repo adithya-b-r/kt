@@ -19,6 +19,7 @@ interface AddRelationshipDialogProps {
         end_date?: string;
         is_primary?: boolean;
         notes?: string;
+        nature?: 'biological' | 'adopted';
     }) => Promise<void>;
 }
 
@@ -77,6 +78,7 @@ export const AddRelationshipDialog: React.FC<AddRelationshipDialogProps> = ({
                 person1_id: finalPerson1,
                 person2_id: finalPerson2,
                 relationship_type: finalType,
+                nature: (relationshipData as any).nature || 'biological'
             });
 
             setRelationshipData({
@@ -145,6 +147,38 @@ export const AddRelationshipDialog: React.FC<AddRelationshipDialogProps> = ({
                         </Select>
                     </div>
 
+
+
+                    {(relationshipData.relationship_type === 'parent_of' || relationshipData.relationship_type === 'child_of') && (
+                        <div className="space-y-2">
+                            <Label>Relationship Nature</Label>
+                            <div className="flex gap-4">
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                        type="radio"
+                                        name="nature"
+                                        value="biological"
+                                        checked={(relationshipData as any).nature !== 'adopted'}
+                                        onChange={() => setRelationshipData(prev => ({ ...prev, nature: 'biological' }))}
+                                        className="accent-[#64303A]"
+                                    />
+                                    <span>Biological</span>
+                                </label>
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                        type="radio"
+                                        name="nature"
+                                        value="adopted"
+                                        checked={(relationshipData as any).nature === 'adopted'}
+                                        onChange={() => setRelationshipData(prev => ({ ...prev, nature: 'adopted' }))}
+                                        className="accent-[#64303A]"
+                                    />
+                                    <span>Adopted</span>
+                                </label>
+                            </div>
+                        </div>
+                    )}
+
                     <div>
                         <Label htmlFor="person2">Second Person</Label>
                         <Select
@@ -182,7 +216,7 @@ export const AddRelationshipDialog: React.FC<AddRelationshipDialogProps> = ({
                         </Button>
                     </div>
                 </div>
-            </DialogContent>
-        </Dialog>
+            </DialogContent >
+        </Dialog >
     );
 };

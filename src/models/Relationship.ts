@@ -8,6 +8,7 @@ export interface IRelationship {
     relationship_type: string;
     marriage_date?: Date;
     divorce_date?: Date;
+    nature: 'biological' | 'adopted';
     created_at: Date;
 }
 
@@ -18,6 +19,7 @@ const RelationshipSchema = new Schema<IRelationship>({
     relationship_type: { type: String, required: true },
     marriage_date: { type: Date },
     divorce_date: { type: Date },
+    nature: { type: String, enum: ['biological', 'adopted'], default: 'biological' },
     created_at: { type: Date, default: Date.now },
 });
 

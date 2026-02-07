@@ -135,7 +135,8 @@ export async function validateNewRelationship(
     treeId: string,
     person1Id: string,
     person2Id: string,
-    relationshipType: string
+    relationshipType: string,
+    nature: 'biological' | 'adopted' = 'biological'
 ): Promise<ValidationResult> {
     const person1 = await Member.findById(person1Id);
     const person2 = await Member.findById(person2Id);
@@ -151,6 +152,22 @@ export async function validateNewRelationship(
             if (!res.valid) return res;
         }
     } else if (relationshipType === 'parent_child') {
+        // Check 1: Biological Child Requirement (Must have 2 parents)
+        if (nature === 'biological') {
+            const spouseRel = await Relationship.findOne({
+                tree_id: treeId,
+                relationship_type: 'spouse',
+                $or: [{ person1_id: person1Id }, { person2_id: person1Id }]
+            });
+
+            if (!spouseRel) {
+                return {
+                    valid: false,
+                    message: "Biological children must have two parents (a spouse/partner is required). Mark as 'Adopted' if there is only one parent."
+                };
+            }
+        }
+
         // person1 is parent, person2 is child
         if (person1.birth_date && person2.birth_date) {
             const res = await validateParentAge(person1Id, person1.birth_date, person2.birth_date);
@@ -162,6 +179,8 @@ export async function validateNewRelationship(
             const res = await validateSiblingGap(person2Id, person2.birth_date, treeId, person1Id);
             if (!res.valid) return res;
         }
+
+
     }
 
     return { valid: true };

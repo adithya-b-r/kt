@@ -97,7 +97,9 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
         death_date: '',
         photo_url: '',
         marriage_date: '',
+
         divorce_date: '',
+        nature: 'biological', // Default to biological
     });
 
     // Removed fileInputRef as it is no longer needed with CldUploadWidget
@@ -297,6 +299,10 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
                         if ((newMemberData as any).marriage_date) extraData.marriage_date = (newMemberData as any).marriage_date;
                         if ((newMemberData as any).divorce_date) extraData.divorce_date = (newMemberData as any).divorce_date;
                     }
+                    // Pass nature for parent-child
+                    if (relationship_type === 'parent_child') {
+                        extraData.nature = (newMemberData as any).nature;
+                    }
 
                     await addRelationship({ person1_id, person2_id, relationship_type, ...extraData });
                 }
@@ -313,7 +319,9 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
                 death_date: '',
                 photo_url: '',
                 marriage_date: '',
+                marriage_date: '',
                 divorce_date: '',
+                nature: 'biological',
             });
             toast.success('Family member added successfully!');
         } catch (error: any) {
@@ -368,6 +376,7 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
                 photo_url: '',
                 marriage_date: '',
                 divorce_date: '',
+                nature: 'biological',
             };
         });
         setIsAddingMember(true);
@@ -1092,6 +1101,37 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
                                 </SelectContent>
                             </Select>
                         </div>
+
+                        {/* Relationship Nature for Parent/Child */}
+                        {(addContext.relationType === 'child' || addContext.relationType === 'parent') && (
+                            <div className="space-y-2">
+                                <Label className="text-xs sm:text-sm">Relationship Nature</Label>
+                                <div className="flex gap-4">
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                        <input
+                                            type="radio"
+                                            name="nature"
+                                            value="biological"
+                                            checked={(newMemberData as any).nature !== 'adopted'}
+                                            onChange={() => setNewMemberData(prev => ({ ...prev, nature: 'biological' } as any))}
+                                            className="accent-[#64303A]"
+                                        />
+                                        <span className="text-xs sm:text-sm">Biological</span>
+                                    </label>
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                        <input
+                                            type="radio"
+                                            name="nature"
+                                            value="adopted"
+                                            checked={(newMemberData as any).nature === 'adopted'}
+                                            onChange={() => setNewMemberData(prev => ({ ...prev, nature: 'adopted' } as any))}
+                                            className="accent-[#64303A]"
+                                        />
+                                        <span className="text-xs sm:text-sm">Adopted</span>
+                                    </label>
+                                </div>
+                            </div>
+                        )}
 
                         {addContext.relationType === 'spouse' && (
                             <div className="space-y-4 pt-2 border-t border-gray-100">

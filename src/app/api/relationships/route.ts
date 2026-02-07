@@ -28,7 +28,8 @@ export async function POST(request: Request) {
             body.tree_id,
             body.person1_id,
             body.person2_id,
-            body.relationship_type
+            body.relationship_type,
+            body.nature
         );
 
         if (!validation.valid) {
