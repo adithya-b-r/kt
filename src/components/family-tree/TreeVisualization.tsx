@@ -311,6 +311,121 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
         });
     }, []);
 
+    // --- TOUCH HANDLING ---
+    const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+    const touchStartDistanceRef = useRef<number | null>(null);
+    const touchStartScaleRef = useRef<number>(1);
+    const touchStartMidpointRef = useRef<{ x: number; y: number } | null>(null);
+    const lastPanRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+
+    const getDistance = (t1: Touch, t2: Touch) => {
+        const dx = t1.clientX - t2.clientX;
+        const dy = t1.clientY - t2.clientY;
+        return Math.sqrt(dx * dx + dy * dy);
+    };
+
+    const getMidpoint = (t1: Touch, t2: Touch) => {
+        return {
+            x: (t1.clientX + t2.clientX) / 2,
+            y: (t1.clientY + t2.clientY) / 2,
+        };
+    };
+
+    const handleTouchStart = useCallback((e: TouchEvent) => {
+        if (e.touches.length === 1) {
+            // Pan
+            const touch = e.touches[0];
+            touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+            lastPanRef.current = { x: pan.x, y: pan.y };
+            setIsDragging(true);
+        } else if (e.touches.length === 2) {
+            // Zoom
+            e.preventDefault();
+            const dist = getDistance(e.touches[0], e.touches[1]);
+            touchStartDistanceRef.current = dist;
+            touchStartScaleRef.current = zoom;
+
+            if (containerRef.current) {
+                const rect = containerRef.current.getBoundingClientRect();
+                const mid = getMidpoint(e.touches[0], e.touches[1]);
+                // Store midpoint relative to logic if needed, but for simple zoom
+                // we mainly need strict scaling. Center-zoom requires pan adjustment.
+
+                // Store midpoint relative to VIZ CONTAINER (for pan adjustment)
+                touchStartMidpointRef.current = {
+                    x: mid.x - rect.left,
+                    y: mid.y - rect.top
+                };
+                lastPanRef.current = { x: pan.x, y: pan.y };
+            }
+        }
+    }, [pan, zoom]);
+
+    const handleTouchMove = useCallback((e: TouchEvent) => {
+        if (e.touches.length === 1 && touchStartRef.current) {
+            // Pan
+            e.preventDefault(); // Stop scroll
+            const touch = e.touches[0];
+            const deltaX = touch.clientX - touchStartRef.current.x;
+            const deltaY = touch.clientY - touchStartRef.current.y;
+
+            setPan({
+                x: lastPanRef.current.x + deltaX,
+                y: lastPanRef.current.y + deltaY
+            });
+        } else if (e.touches.length === 2 && touchStartDistanceRef.current && touchStartMidpointRef.current) {
+            // Zoom
+            e.preventDefault();
+            const dist = getDistance(e.touches[0], e.touches[1]);
+            const scaleFactor = dist / touchStartDistanceRef.current;
+
+            const newZoom = Math.min(Math.max(touchStartScaleRef.current * scaleFactor, 0.1), 3);
+
+            // Adjust Pan to zoom towards midpoint
+            // mid relative to container (visual viewport)
+            const mid = touchStartMidpointRef.current;
+            const oldZoom = touchStartScaleRef.current;
+
+            // Logic: The point under 'mid' should remain under 'mid'
+            // worldPoint = (mid - oldPan) / oldZoom
+            // mid = worldPoint * newZoom + newPan
+            // newPan = mid - worldPoint * newZoom
+            // newPan = mid - ((mid - oldPan) / oldZoom) * newZoom
+
+            const oldPan = lastPanRef.current;
+            const newPanX = mid.x - ((mid.x - oldPan.x) / oldZoom) * newZoom;
+            const newPanY = mid.y - ((mid.y - oldPan.y) / oldZoom) * newZoom;
+
+            setZoom(newZoom);
+            setPan({ x: newPanX, y: newPanY });
+        }
+    }, []);
+
+    const handleTouchEnd = useCallback(() => {
+        setIsDragging(false);
+        touchStartRef.current = null;
+        touchStartDistanceRef.current = null;
+    }, []);
+
+    // Attach Touch Listeners (Non-Passive)
+    useEffect(() => {
+        const el = containerRef.current;
+        if (!el) return;
+
+        el.addEventListener('touchstart', handleTouchStart, { passive: false });
+        el.addEventListener('touchmove', handleTouchMove, { passive: false });
+        el.addEventListener('touchend', handleTouchEnd);
+        // Also cancel/leave
+        el.addEventListener('touchcancel', handleTouchEnd);
+
+        return () => {
+            el.removeEventListener('touchstart', handleTouchStart);
+            el.removeEventListener('touchmove', handleTouchMove);
+            el.removeEventListener('touchend', handleTouchEnd);
+            el.removeEventListener('touchcancel', handleTouchEnd);
+        };
+    }, [handleTouchStart, handleTouchMove, handleTouchEnd]);
+
 
     // --- RENDERER HELPER (Elbow Lines) ---
     // Returns SVG Path d attribute
@@ -665,6 +780,7 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
             <div
                 ref={containerRef}
                 className="w-full h-full cursor-grab active:cursor-grabbing relative"
+                style={{ touchAction: 'none' }}
                 onMouseDown={handleMouseDown}
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}

@@ -355,12 +355,12 @@ export default function ProfilePage() {
                         <div className="flex items-center gap-4">
                             <Link href="/dashboard">
                                 <Button variant="ghost" size="sm" className="hover:bg-[var(--color-kutumba-light-teal)] hover:text-[var(--color-kutumba-teal)] transition-colors">
-                                    <ArrowLeft className="h-4 w-4 mr-2" />
-                                    Back
+                                    <ArrowLeft className="h-4 w-4 sm:mr-2" />
+                                    <span className="hidden sm:inline">Back</span>
                                 </Button>
                             </Link>
                             <div>
-                                <h1 className="text-2xl font-serif font-bold text-[var(--color-kutumba-maroon)]">Your Profile</h1>
+                                <h1 className="text-xl sm:text-2xl font-serif font-bold text-[var(--color-kutumba-maroon)]">Your Profile</h1>
                                 <p className="text-sm text-[var(--color-kutumba-muted)] hidden sm:block">Manage your personal story and timeline</p>
                             </div>
                         </div>
@@ -371,13 +371,15 @@ export default function ProfilePage() {
                         >
                             {saving ? (
                                 <>
-                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                    Saving...
+                                    <Loader2 className="h-4 w-4 mr-2 animate-spin bg-none" />
+                                    <span className="sm:hidden">Saving</span>
+                                    <span className="hidden sm:inline">Saving...</span>
                                 </>
                             ) : (
                                 <>
                                     <Save className="h-4 w-4 mr-2" />
-                                    Save Changes
+                                    <span className="sm:hidden">Save</span>
+                                    <span className="hidden sm:inline">Save Changes</span>
                                 </>
                             )}
                         </Button>
