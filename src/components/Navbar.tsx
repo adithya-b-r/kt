@@ -19,6 +19,7 @@ export default function Navbar() {
               width={40}
               height={40}
               priority
+              unoptimized
             />
           </div>
           <h1 className="text-xl font-extrabold text-kutumba-dark-text">
