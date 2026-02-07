@@ -13,7 +13,8 @@
     display: flex;
     align-items: center;
     padding: 12px;
-    padding-left: 20px; /* Space for avatar */
+    padding-left: 20px;
+    /* Space for avatar */
     box-sizing: border-box;
     transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s ease, border-color 0.3s ease;
     z-index: 10;
@@ -32,15 +33,18 @@
 
 /* Gender Borders - Whole card border color */
 .node.male {
-    border-color: #4a90e2; /* Blue */
+    border-color: #4a90e2;
+    /* Blue */
 }
 
 .node.female {
-    border-color: #ef4444; /* Pink/Red/Salmon */
+    border-color: #ef4444;
+    /* Pink/Red/Salmon */
 }
 
 .node.other {
-    border-color: #9ca3af; /* Grey */
+    border-color: #9ca3af;
+    /* Grey */
 }
 
 .node.male:hover {
@@ -94,18 +98,22 @@
 
 .name {
     font-weight: 700;
-    font-size: 0.95rem; /* 15px */
+    font-size: 0.95rem;
+    /* 15px */
     line-height: 1.2;
     margin-bottom: 4px;
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
-    color: #1f2937; /* Gray 900 */
+    color: #1f2937;
+    /* Gray 900 */
 }
 
 .details {
-    font-size: 0.8rem; /* 13px */
-    color: #6b7280; /* Gray 500 */
+    font-size: 0.8rem;
+    /* 13px */
+    color: #6b7280;
+    /* Gray 500 */
     font-weight: 500;
 }
 
@@ -113,7 +121,8 @@
 /* --- ACTIONS OVERLAY ("Hanging Button") --- */
 .actionsOverlay {
     position: absolute;
-    bottom: -19px; /* Half of button height (say 28px) + offset */
+    bottom: -19px;
+    /* Half of button height (say 28px) + offset */
     left: 50%;
     transform: translateX(-50%);
     display: flex;
@@ -126,11 +135,14 @@
 /* The "+ Add" Button - Hanging Tab Style */
 .actBtn.addC {
     width: 38px;
-    height: 22px; /* Flattened pill/half-circle look */
-    border-radius: 0 0 16px 16px; /* Bottom rounded only */
+    height: 22px;
+    /* Flattened pill/half-circle look */
+    border-radius: 0 0 16px 16px;
+    /* Bottom rounded only */
     background: #ffffff;
     border: 1px solid;
-    border-top: none; /* Look like it comes out of card */
+    border-top: none;
+    /* Look like it comes out of card */
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     color: #6b7280;
     display: flex;
@@ -146,16 +158,19 @@
 .node.male .actBtn.addC {
     border-color: #4a90e2;
 }
+
 .node.female .actBtn.addC {
     border-color: #ef4444;
 }
+
 .node.other .actBtn.addC {
     border-color: #9ca3af;
 }
 
 .actBtn.addC:hover {
     background: #f9fafb;
-    height: 26px; /* Animate down simply */
+    height: 26px;
+    /* Animate down simply */
     padding-top: 4px;
 }
 
@@ -199,7 +214,8 @@
     align-items: center;
     justify-content: center;
     transition: all 0.2s;
-    z-index: 21; /* Above node */
+    z-index: 21;
+    /* Above node */
     height: 20px;
 }
 
@@ -354,17 +370,278 @@
 }
 
 /* Positions preserved */
-.posFather { top: 15%; left: 25%; }
-.posMother { top: 15%; right: 25%; }
-.posBrother { top: 43%; left: 5%; }
-.posSister { top: 57%; left: 5%; }
-.posPartner { top: calc(50% - 30px); right: 5%; }
-.posSon { bottom: 15%; left: 25%; }
-.posDaughter { bottom: 15%; right: 25%; }
+.posFather {
+    top: 15%;
+    left: 25%;
+}
+
+.posMother {
+    top: 15%;
+    right: 25%;
+}
+
+.posBrother {
+    top: 43%;
+    left: 5%;
+}
+
+.posSister {
+    top: 57%;
+    left: 5%;
+}
+
+.posPartner {
+    top: calc(50% - 30px);
+    right: 5%;
+}
+
+.posSon {
+    bottom: 15%;
+    left: 25%;
+}
+
+.posDaughter {
+    bottom: 15%;
+    right: 25%;
+}
 
 .connector {
     fill: none;
     stroke: #9ca3af;
     stroke-width: 2;
     opacity: 0.5;
+}
+
+/* --- MOBILE RELATIONSHIP PICKER --- */
+@media (max-width: 768px) {
+    .pickerOverlay {
+        background: #fff;
+        /* Full screen white bg */
+        z-index: 9999;
+    }
+
+    .pickerClose {
+        display: none;
+        /* Use mobile header back button instead */
+    }
+
+    .pickerContainer {
+        position: relative;
+        top: 0;
+        left: 0;
+        transform: none;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: start;
+        padding-top: 80px;
+        /* Space for header */
+        align-items: center;
+    }
+
+    /* Hide Desktop Elements */
+    .pickerSvg,
+    .centerPerson {
+        display: none !important;
+    }
+
+    /* Mobile Header */
+    .mobileHeader {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        padding: 0 16px;
+        border-bottom: 1px solid #f3f4f6;
+        background: #fff;
+        z-index: 50;
+    }
+
+    .mobileBack {
+        background: none;
+        border: none;
+        padding: 8px;
+        margin-right: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        width: 40px;
+        height: 40px;
+    }
+
+    .mobileTitle {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #1f2937;
+        flex: 1;
+        font-family: 'Amatic SC', cursive;
+        /* Optional fancy font if available, else standard */
+        font-family: inherit;
+    }
+
+    /* Flex Column Layout for Sections */
+    .pickerContainer {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        /* Gap between generations */
+        padding: 80px 16px 24px 16px;
+        align-items: center;
+        max-width: 400px;
+        margin: 0 auto;
+
+        /* Animation: Slide Up Entrance */
+        animation: slideUp 0.3s ease-out forwards;
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    .pickerSection {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 20px;
+        /* Gap between items in a row */
+        width: 100%;
+    }
+
+    @keyframes slideUp {
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    /* Reset Card Styles for Avatar Look */
+    .pickerCard,
+    .pickerCard:hover,
+    .pickerCard.maleRole,
+    .pickerCard.femaleRole,
+    .pickerCard.neutral {
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        right: auto !important;
+        bottom: auto !important;
+        transform: none !important;
+        width: 80px !important;
+        /* Fixed width for alignment */
+        height: auto !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        padding: 0;
+        margin: 0;
+    }
+
+    /* Avatar Circle */
+    .pickerAvatar {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        margin-right: 0;
+        margin-bottom: 8px;
+        font-size: 1.5rem;
+        background: #f3f4f6 !important;
+        /* Force gray */
+        color: transparent !important;
+        /* Hide original + */
+        position: relative;
+        overflow: visible;
+        border: 1px solid #e5e7eb;
+
+        /* Premium Polish */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        transition: transform 0.1s ease, box-shadow 0.1s ease;
+    }
+
+    .pickerAvatar:active {
+        transform: scale(0.95);
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Plus Badge logic */
+    .pickerAvatar::after {
+        content: '+';
+        position: absolute;
+        bottom: -2px;
+        right: -2px;
+        width: 24px;
+        height: 24px;
+        background: #f97316;
+        color: white !important;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        font-weight: bold;
+        border: 2px solid #fff;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Info / Label */
+    .pickerInfo {
+        text-align: center;
+        width: 100%;
+    }
+
+    .pickerTitle {
+        font-size: 0.8rem;
+        font-weight: 600;
+        /* Increased weight */
+        color: #374151;
+        white-space: normal;
+        line-height: 1.2;
+        font-family: system-ui, -apple-system, sans-serif;
+        /* Clean sans-serif */
+    }
+
+    .pickerSub {
+        display: none;
+    }
+
+    /* Removing explicit Grid positioning classes as we rely on Flex order now */
+    .posFather,
+    .posMother,
+    .posPartner,
+    .posBrother,
+    .posSister,
+    .posSon,
+    .posDaughter {
+        grid-column: auto;
+        grid-row: auto;
+    }
+}
+
+@media (min-width: 769px) {
+    .mobileHeader {
+        display: none;
+    }
+
+    /* 
+       Restore Desktop Layout: 
+       The new .pickerSection wrappers break absolute positioning if they are block/flex. 
+       Use display: contents to make them "disappear" from the layout tree, 
+       allowing children (.pickerCard) to be positioned relative to .pickerContainer.
+    */
+    .pickerSection {
+        display: contents;
+    }
+
+    /* Ensure container allows absolute positioning of children */
+    .pickerContainer {
+        display: block;
+        /* or existing desktop style */
+        position: absolute;
+        /* Restore original absolute positioning context if needed, though likely already set in base styles */
+    }
 }

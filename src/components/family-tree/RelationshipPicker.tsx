@@ -99,6 +99,16 @@ export const RelationshipPicker: React.FC<RelationshipPickerProps> = ({
                     ) : null)}
                 </svg>
 
+                {/* Mobile Header */}
+                <div className={styles.mobileHeader}>
+                    <button className={styles.mobileBack} onClick={onClose}>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M15 18l-6-6 6-6" />
+                        </svg>
+                    </button>
+                    <span className={styles.mobileTitle}>Add a relative of {targetMember.first_name}</span>
+                </div>
+
                 {/* Center Person */}
                 <div ref={centerRef} className={`${styles.pickerCard} ${styles.centerPerson} ${targetMember.gender === 'male' ? styles.maleRole : styles.femaleRole}`}>
                     <div className={styles.pickerAvatar}>
@@ -110,74 +120,70 @@ export const RelationshipPicker: React.FC<RelationshipPickerProps> = ({
                     </div>
                 </div>
 
-                {/* Options - Conditionally Render */}
+                {/* SECTION 1: PARENTS */}
+                <div className={styles.pickerSection}>
+                    {!existingRelations.hasFather && (
+                        <div ref={fatherRef} className={`${styles.pickerCard} ${styles.posFather} ${styles.maleRole}`} onClick={() => handleSelect('parent', 'male')}>
+                            <div className={styles.pickerAvatar} style={{ background: '#eef6fc', color: '#4a90e2' }}>+</div>
+                            <div className={styles.pickerInfo}>
+                                <div className={styles.pickerTitle}>Add Father</div>
+                                <div className={styles.pickerSub}>Add Parent</div>
+                            </div>
+                        </div>
+                    )}
+                    {!existingRelations.hasMother && (
+                        <div ref={motherRef} className={`${styles.pickerCard} ${styles.posMother} ${styles.femaleRole}`} onClick={() => handleSelect('parent', 'female')}>
+                            <div className={styles.pickerAvatar} style={{ background: '#fceef6', color: '#e24a8d' }}>+</div>
+                            <div className={styles.pickerInfo}>
+                                <div className={styles.pickerTitle}>Add Mother</div>
+                                <div className={styles.pickerSub}>Add Parent</div>
+                            </div>
+                        </div>
+                    )}
+                </div>
 
-                {/* Father: Show only if hasFather is false */}
-                {!existingRelations.hasFather && (
-                    <div ref={fatherRef} className={`${styles.pickerCard} ${styles.posFather} ${styles.maleRole}`} onClick={() => handleSelect('parent', 'male')}>
+                {/* SECTION 2: PEERS (Partner & Siblings) */}
+                <div className={styles.pickerSection}>
+                    {!existingRelations.hasSpouse && (
+                        <div ref={partnerRef} className={`${styles.pickerCard} ${styles.posPartner} ${styles.neutral}`} onClick={() => handleSelect('spouse')}>
+                            <div className={styles.pickerAvatar} style={{ background: '#eee', color: '#888' }}>+</div>
+                            <div className={styles.pickerInfo}>
+                                <div className={styles.pickerTitle}>Add Partner</div>
+                                <div className={styles.pickerSub}>Spouse / Ex</div>
+                            </div>
+                        </div>
+                    )}
+                    <div ref={brotherRef} className={`${styles.pickerCard} ${styles.posBrother} ${styles.maleRole}`} onClick={() => handleSelect('sibling', 'male')}>
                         <div className={styles.pickerAvatar} style={{ background: '#eef6fc', color: '#4a90e2' }}>+</div>
                         <div className={styles.pickerInfo}>
-                            <div className={styles.pickerTitle}>Add Father</div>
-                            <div className={styles.pickerSub}>Add Parent</div>
+                            <div className={styles.pickerTitle}>Add Brother</div>
+                            <div className={styles.pickerSub}>Add Sibling</div>
                         </div>
                     </div>
-                )}
-
-                {/* Mother: Show only if hasMother is false */}
-                {!existingRelations.hasMother && (
-                    <div ref={motherRef} className={`${styles.pickerCard} ${styles.posMother} ${styles.femaleRole}`} onClick={() => handleSelect('parent', 'female')}>
+                    <div ref={sisterRef} className={`${styles.pickerCard} ${styles.posSister} ${styles.femaleRole}`} onClick={() => handleSelect('sibling', 'female')}>
                         <div className={styles.pickerAvatar} style={{ background: '#fceef6', color: '#e24a8d' }}>+</div>
                         <div className={styles.pickerInfo}>
-                            <div className={styles.pickerTitle}>Add Mother</div>
-                            <div className={styles.pickerSub}>Add Parent</div>
+                            <div className={styles.pickerTitle}>Add Sister</div>
+                            <div className={styles.pickerSub}>Add Sibling</div>
                         </div>
                     </div>
-                )}
-
-                {/* Brother */}
-                <div ref={brotherRef} className={`${styles.pickerCard} ${styles.posBrother} ${styles.maleRole}`} onClick={() => handleSelect('sibling', 'male')}>
-                    <div className={styles.pickerAvatar} style={{ background: '#eef6fc', color: '#4a90e2' }}>+</div>
-                    <div className={styles.pickerInfo}>
-                        <div className={styles.pickerTitle}>Add Brother</div>
-                        <div className={styles.pickerSub}>Add Sibling</div>
-                    </div>
                 </div>
 
-                {/* Sister */}
-                <div ref={sisterRef} className={`${styles.pickerCard} ${styles.posSister} ${styles.femaleRole}`} onClick={() => handleSelect('sibling', 'female')}>
-                    <div className={styles.pickerAvatar} style={{ background: '#fceef6', color: '#e24a8d' }}>+</div>
-                    <div className={styles.pickerInfo}>
-                        <div className={styles.pickerTitle}>Add Sister</div>
-                        <div className={styles.pickerSub}>Add Sibling</div>
-                    </div>
-                </div>
-
-                {/* Partner: Show only if hasSpouse is false */}
-                {!existingRelations.hasSpouse && (
-                    <div ref={partnerRef} className={`${styles.pickerCard} ${styles.posPartner} ${styles.neutral}`} onClick={() => handleSelect('spouse')}>
-                        <div className={styles.pickerAvatar} style={{ background: '#eee', color: '#888' }}>+</div>
+                {/* SECTION 3: CHILDREN */}
+                <div className={styles.pickerSection}>
+                    <div ref={sonRef} className={`${styles.pickerCard} ${styles.posSon} ${styles.maleRole}`} onClick={() => handleSelect('child', 'male')}>
+                        <div className={styles.pickerAvatar} style={{ background: '#eef6fc', color: '#4a90e2' }}>+</div>
                         <div className={styles.pickerInfo}>
-                            <div className={styles.pickerTitle}>Add Partner</div>
-                            <div className={styles.pickerSub}>Spouse / Ex</div>
+                            <div className={styles.pickerTitle}>Add Son</div>
+                            <div className={styles.pickerSub}>Add Child</div>
                         </div>
                     </div>
-                )}
-
-                {/* Son */}
-                <div ref={sonRef} className={`${styles.pickerCard} ${styles.posSon} ${styles.maleRole}`} onClick={() => handleSelect('child', 'male')}>
-                    <div className={styles.pickerAvatar} style={{ background: '#eef6fc', color: '#4a90e2' }}>+</div>
-                    <div className={styles.pickerInfo}>
-                        <div className={styles.pickerTitle}>Add Son</div>
-                        <div className={styles.pickerSub}>Add Child</div>
-                    </div>
-                </div>
-
-                {/* Daughter */}
-                <div ref={daughterRef} className={`${styles.pickerCard} ${styles.posDaughter} ${styles.femaleRole}`} onClick={() => handleSelect('child', 'female')}>
-                    <div className={styles.pickerAvatar} style={{ background: '#fceef6', color: '#e24a8d' }}>+</div>
-                    <div className={styles.pickerInfo}>
-                        <div className={styles.pickerTitle}>Add Daughter</div>
-                        <div className={styles.pickerSub}>Add Child</div>
+                    <div ref={daughterRef} className={`${styles.pickerCard} ${styles.posDaughter} ${styles.femaleRole}`} onClick={() => handleSelect('child', 'female')}>
+                        <div className={styles.pickerAvatar} style={{ background: '#fceef6', color: '#e24a8d' }}>+</div>
+                        <div className={styles.pickerInfo}>
+                            <div className={styles.pickerTitle}>Add Daughter</div>
+                            <div className={styles.pickerSub}>Add Child</div>
+                        </div>
                     </div>
                 </div>
 
