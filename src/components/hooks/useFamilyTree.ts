@@ -170,6 +170,14 @@ export const useFamilyTree = (treeId: string) => {
             }
 
             const newRelData = await res.json();
+
+            // Show warning if present
+            if (newRelData.warning) {
+                toast.warning(newRelData.warning, { duration: 5000 });
+            } else {
+                toast.success('Relationship added successfully');
+            }
+
             const newRelationship = {
                 id: newRelData._id,
                 person1_id: newRelData.person1_id,
@@ -180,7 +188,6 @@ export const useFamilyTree = (treeId: string) => {
                 nature: newRelData.nature
             };
             setRelationships((prev) => [...prev, newRelationship]);
-            toast.success('Relationship added successfully');
         } catch (error: any) {
             console.error(error);
             // toast.error(error.message || 'Failed to add relationship');
