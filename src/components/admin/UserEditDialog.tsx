@@ -6,6 +6,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -71,6 +72,9 @@ export function UserEditDialog({ user, open, onClose, onSave }: UserEditDialogPr
       <DialogContent className="sm:max-w-[425px] bg-white text-slate-900">
         <DialogHeader>
           <DialogTitle className="text-slate-900">Edit User</DialogTitle>
+          <DialogDescription>
+            Make changes to the user's profile and settings here. Click save when you're done.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4 py-4">

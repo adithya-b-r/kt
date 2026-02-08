@@ -2,18 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
+import { X } from 'lucide-react';
 
 type Sentiment = 'Proud' | 'Emotional' | 'Neutral' | 'Confused' | 'Frustrated';
 
@@ -28,6 +22,7 @@ const sentiments: { value: Sentiment; label: string; emoji: string }[] = [
 const DEV_MODE = false; // Set to true to see timer logs in console
 
 export function FeedbackModal() {
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [sentiment, setSentiment] = useState<Sentiment | null>(null);
   const [message, setMessage] = useState('');
@@ -38,6 +33,8 @@ export function FeedbackModal() {
   const [timerStarted, setTimerStarted] = useState(false);
 
   useEffect(() => {
+    if (!user) return; // Don't track if not logged in
+
     // Check if we already have a start time in session storage
     const storedStartTime = sessionStorage.getItem('feedback_start_time');
 
@@ -48,10 +45,10 @@ export function FeedbackModal() {
       sessionStorage.setItem('feedback_start_time', Date.now().toString());
       setTimerStarted(true);
     }
-  }, [pathname, hasSubmitted, timerStarted]);
+  }, [pathname, hasSubmitted, timerStarted, user]);
 
   useEffect(() => {
-    if (hasSubmitted || open) return;
+    if (hasSubmitted || open || !user) return;
 
     const interval = setInterval(() => {
       const storedStartTime = sessionStorage.getItem('feedback_start_time');
@@ -67,7 +64,7 @@ export function FeedbackModal() {
     }, 1000); // Check every second
 
     return () => clearInterval(interval);
-  }, [hasSubmitted, open]);
+  }, [hasSubmitted, open, user]);
 
   const handleSubmit = async () => {
     if (!sentiment) {
@@ -97,11 +94,17 @@ export function FeedbackModal() {
   };
 
   // DEBUGGING: Using raw HTML to verify visibility
-  if (!open) return null;
+  if (!open || !user) return null;
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50">
-      <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md m-4">
+      <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md m-4 relative">
+        <button
+          onClick={() => setOpen(false)}
+          className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors"
+        >
+          <X className="h-5 w-5" />
+        </button>
         <h2 className="text-xl font-bold mb-2 text-center">Your experience matters</h2>
         <p className="text-center text-gray-600 mb-6">
           How did building this family tree make you feel?
