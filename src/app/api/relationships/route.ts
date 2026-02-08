@@ -37,7 +37,14 @@ export async function POST(request: Request) {
         }
 
         const newRel = await Relationship.create(body);
-        return NextResponse.json(newRel);
+
+        // Return warning if exists
+        const responseData = newRel.toObject();
+        if (validation.warning) {
+            (responseData as any).warning = validation.warning;
+        }
+
+        return NextResponse.json(responseData);
     } catch (error) {
         console.error('Create relationship error:', error);
         return NextResponse.json({ message: 'Internal server error' }, { status: 500 });

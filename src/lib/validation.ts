@@ -7,6 +7,7 @@ import mongoose from 'mongoose';
 export interface ValidationResult {
     valid: boolean;
     message?: string;
+    warning?: string; // Non-blocking warning message
 }
 
 // 1. Sibling Validation
@@ -153,6 +154,7 @@ export async function validateNewRelationship(
         }
     } else if (relationshipType === 'parent_child') {
         // Check 1: Biological Child Requirement (Must have 2 parents)
+        // Check 1: Biological Child Requirement (Warn if single parent)
         if (nature === 'biological') {
             const spouseRel = await Relationship.findOne({
                 tree_id: treeId,
@@ -161,12 +163,19 @@ export async function validateNewRelationship(
             });
 
             if (!spouseRel) {
+                // Determine missing parent term based on current parent's gender
+                const currentParentGender = person1.gender;
+                const missingParentTerm = currentParentGender === 'male' ? 'mother' :
+                    currentParentGender === 'female' ? 'father' : 'partner';
+
+                // Return valid=true but with a specific warning
                 return {
-                    valid: false,
-                    message: "Biological children must have two parents (a spouse/partner is required). Mark as 'Adopted' if there is only one parent."
+                    valid: true,
+                    warning: `Did you forget to add ${missingParentTerm}? (A spouse/partner is usually expected for biological children)`
                 };
             }
         }
+
 
         // person1 is parent, person2 is child
         if (person1.birth_date && person2.birth_date) {
