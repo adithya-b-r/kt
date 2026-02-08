@@ -361,7 +361,7 @@ export default function ProfilePage() {
                                 </Button>
                             </Link>
                             <div>
-                                <h1 className="text-xl sm:text-2xl font-serif font-bold text-[var(--color-kutumba-maroon)]">Your Profile</h1>
+                                <h1 className="text-xl sm:text-2xl font-bold text-[var(--color-kutumba-maroon)]">Your Profile</h1>
                                 <p className="text-sm text-[var(--color-kutumba-muted)] hidden sm:block">Manage your personal story and timeline</p>
                             </div>
                         </div>

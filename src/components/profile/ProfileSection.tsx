@@ -32,8 +32,8 @@ export function ProfileSection({
     const toggleOpen = () => setIsOpen(!isOpen);
 
     return (
-        <Card className="border-0 shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden">
-            <div className={cn("h-2 bg-gradient-to-r", gradientClassName)} />
+        <Card className="shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden border-t-4 border-t-gray-500">
+            {/* Gradient strip removed for simpler styling */}
             <CardHeader
                 className="pb-4 border-b border-gray-100 bg-white cursor-pointer select-none group"
                 onClick={toggleOpen}
