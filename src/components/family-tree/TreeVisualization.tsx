@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ZoomIn, ZoomOut, Plus, RotateCcw, Target } from 'lucide-react';
+import { ZoomIn, ZoomOut, Plus, RotateCcw, Target, AlertTriangle, Users } from 'lucide-react';
 import { FamilyMember, Relationship } from '@/components/hooks/useFamilyTree';
 import { MemberCard } from './MemberCard';
 import { RelationshipPicker } from './RelationshipPicker';
@@ -56,6 +56,9 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
 
     // Relationship Picker State
     const [pickerTargetId, setPickerTargetId] = useState<string | null>(null);
+
+    // Orphaned Members State
+    const [showOrphans, setShowOrphans] = useState(false);
 
     // --- DATA HELPER MAPS ---
     const { personMap, spouseMap, childrenMap, parentsMap, relationshipMap } = useMemo(() => {
@@ -249,6 +252,13 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
 
         return positions;
     }, [familyMembers, focusedRootId, personMap, spouseMap, childrenMap, parentsMap]);
+
+    // --- IDENTIFY ORPHANED MEMBERS ---
+    const orphanedMembers = useMemo(() => {
+        const visibleIds = new Set(Object.keys(layout));
+        if (visibleIds.size === 0 && familyMembers.length > 0) return []; // Initial load or error
+        return familyMembers.filter(m => !visibleIds.has(m.id));
+    }, [layout, familyMembers]);
 
 
     // --- VIEW / ZOOM LOGIC ---
@@ -797,6 +807,55 @@ export const TreeVisualization = React.forwardRef<TreeVisualizationHandle, TreeV
                         hasSpouse: (spouseMap.get(pickerTargetId!)?.length || 0) > 0,
                     }}
                 />
+            )}
+
+            {/* Orphaned Members Indicator */}
+            {orphanedMembers.length > 0 && (
+                <div className="absolute top-4 right-4 z-10 flex flex-col items-end gap-2">
+                    <Button
+                        variant="destructive"
+                        size="sm"
+                        className="shadow-md gap-2"
+                        onClick={() => setShowOrphans(!showOrphans)}
+                    >
+                        <AlertTriangle className="h-4 w-4" />
+                        {orphanedMembers.length} Unconnected
+                    </Button>
+
+                    {showOrphans && (
+                        <Card className="p-3 w-64 shadow-xl border-red-100 bg-white/95 backdrop-blur animate-in fade-in slide-in-from-top-2">
+                            <div className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider">
+                                Disconnected Members
+                            </div>
+                            <div className="flex flex-col gap-1 max-h-[300px] overflow-y-auto">
+                                {orphanedMembers.map(m => (
+                                    <button
+                                        key={m.id}
+                                        onClick={() => {
+                                            handleFocus(m.id);
+                                            setShowOrphans(false);
+                                        }}
+                                        className="text-left text-sm p-2 hover:bg-slate-100 rounded flex items-center gap-2 group transition-colors"
+                                    >
+                                        <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-[10px] text-slate-600 shrink-0 overflow-hidden">
+                                            {m.photo_url ? (
+                                                <img src={m.photo_url} alt={m.first_name} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <Users className="h-3 w-3" />
+                                            )}
+                                        </div>
+                                        <span className="truncate flex-1 group-hover:text-blue-600">
+                                            {m.first_name} {m.last_name}
+                                        </span>
+                                    </button>
+                                ))}
+                            </div>
+                            <div className="mt-2 pt-2 border-t border-gray-100 text-[10px] text-gray-400 text-center">
+                                Click a member to view their tree
+                            </div>
+                        </Card>
+                    )}
+                </div>
             )}
 
             {/* Unified Toolbar (Top Left) */}
