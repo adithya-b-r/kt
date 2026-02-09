@@ -497,6 +497,7 @@ export default function ProfilePage() {
                                     value={dateOfBirth}
                                     onChange={(e) => setDateOfBirth(e.target.value)}
                                     className="h-11 border-gray-200 focus:border-[var(--color-kutumba-green)] focus:ring-[var(--color-kutumba-green)] transition-all bg-gray-50/50"
+                                    max={new Date().toISOString().split('T')[0]}
                                 />
                             </div>
                             <div className="space-y-2">
