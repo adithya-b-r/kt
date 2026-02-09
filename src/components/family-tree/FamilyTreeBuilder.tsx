@@ -319,7 +319,6 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
                 death_date: '',
                 photo_url: '',
                 marriage_date: '',
-                marriage_date: '',
                 divorce_date: '',
                 nature: 'biological',
             });
@@ -968,6 +967,7 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
                     r.relationship_type === 'parent_child' &&
                     r.person1_id === selectedMember?.id
                 )}
+                profileDOB={user?.date_of_birth}
             />
 
             <CommandDialog open={openSearch} onOpenChange={setOpenSearch}>
@@ -1168,6 +1168,7 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
                                                 value={(newMemberData as any).marriage_date || ''}
                                                 onChange={(e) => setNewMemberData(prev => ({ ...prev, marriage_date: e.target.value } as any))}
                                                 className="focus-visible:outline-none ring-transparent focus-visible:ring-0 focus-visible:border-emerald-600"
+                                                max={new Date().toISOString().split('T')[0]}
                                             />
                                         </div>
                                     )}
@@ -1179,6 +1180,7 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
                                                 value={(newMemberData as any).divorce_date || ''}
                                                 onChange={(e) => setNewMemberData(prev => ({ ...prev, divorce_date: e.target.value } as any))}
                                                 className="focus-visible:outline-none ring-transparent focus-visible:ring-0 focus-visible:border-blue-600"
+                                                max={new Date().toISOString().split('T')[0]}
                                             />
                                         </div>
                                     )}
@@ -1194,6 +1196,7 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
                                 value={newMemberData.birth_date}
                                 onChange={(e) => setNewMemberData(prev => ({ ...prev, birth_date: e.target.value }))}
                                 className="focus-visible:outline-none ring-transparent focus-visible:ring-0 focus-visible:border-orange-900 text-xs sm:text-sm"
+                                max={new Date().toISOString().split('T')[0]}
                             />
                         </div>
 

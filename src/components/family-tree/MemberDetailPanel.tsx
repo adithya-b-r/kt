@@ -24,6 +24,7 @@ interface MemberDetailPanelProps {
     onUpdateRelationship: (id: string, data: Partial<Relationship>) => Promise<void>;
     onAddRelationship: () => void;
     hasChildren?: boolean;
+    profileDOB?: string | Date;
 }
 
 export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
@@ -37,7 +38,9 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
     onDelete,
     onUpdateRelationship,
     onAddRelationship,
+
     hasChildren = false,
+    profileDOB,
 }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [editData, setEditData] = useState<Partial<FamilyMember>>({});
@@ -51,7 +54,7 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
                 middle_name: member.middle_name || '',
                 last_name: member.last_name,
                 gender: member.gender || '',
-                birth_date: member.birth_date || '',
+                birth_date: (member.is_root && profileDOB) ? (typeof profileDOB === 'string' ? profileDOB.split('T')[0] : new Date(profileDOB).toISOString().split('T')[0]) : (member.birth_date || ''),
                 death_date: member.death_date || '',
                 photo_url: member.photo_url || '',
             });
@@ -64,7 +67,7 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
 
             setIsEditing(false);
         }
-    }, [member]);
+    }, [member, profileDOB]);
 
     const genderConflict =
         isEditing &&
@@ -316,7 +319,15 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
                                     value={editData.birth_date || ''}
                                     onChange={(e) => setEditData(prev => ({ ...prev, birth_date: e.target.value }))}
                                     className="focus-visible:outline-none ring-transparent focus-visible:ring-0 focus-visible:border-orange-900"
+                                    disabled={member.is_root}
+                                    title={member.is_root ? "Managed in your Profile" : ""}
+                                    max={new Date().toISOString().split('T')[0]}
                                 />
+                                {member.is_root && (
+                                    <p className="text-[10px] text-gray-400 mt-1">
+                                        Date of birth for root person is managed in your profile.
+                                    </p>
+                                )}
                             </div>
 
                             <Separator />
@@ -561,6 +572,7 @@ const RelationshipEditor = ({ relationship, onUpdate }: { relationship: Relation
                                 className="h-7 text-xs px-2 w-[80%] text-center focus-visible:ring-emerald-600"
                                 value={data.marriage_date}
                                 onChange={e => setData(p => ({ ...p, marriage_date: e.target.value }))}
+                                max={new Date().toISOString().split('T')[0]}
                             />
                         </div>
                     )}
@@ -572,6 +584,7 @@ const RelationshipEditor = ({ relationship, onUpdate }: { relationship: Relation
                                 className="h-7 text-xs px-2 w-[80%] text-center focus-visible:ring-blue-600"
                                 value={data.divorce_date}
                                 onChange={e => setData(p => ({ ...p, divorce_date: e.target.value }))}
+                                max={new Date().toISOString().split('T')[0]}
                             />
                         </div>
                     )}

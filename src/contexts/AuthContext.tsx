@@ -12,6 +12,7 @@ interface User {
     role?: 'user' | 'admin';
     plan_type?: 'free' | 'pro';
     tree_limit?: number;
+    date_of_birth?: string | Date;
 }
 
 interface AuthContextType {

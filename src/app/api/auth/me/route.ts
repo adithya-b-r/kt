@@ -55,6 +55,7 @@ export async function GET() {
                 role: user.role,
                 plan_type: user.plan_type,
                 tree_limit: user.tree_limit,
+                date_of_birth: user.date_of_birth,
             }
         });
 
