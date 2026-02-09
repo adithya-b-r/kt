@@ -35,15 +35,36 @@ export const MemberCard: React.FC<MemberCardProps> = ({
         const birthDate = new Date(birthDateStr);
         const endDate = deathDateStr ? new Date(deathDateStr) : new Date();
 
-        let age = endDate.getFullYear() - birthDate.getFullYear();
+        if (isNaN(birthDate.getTime())) return '';
+        // If birth date is in the future relative to end date, return empty
+        if (endDate < birthDate) return '';
+
+        let years = endDate.getFullYear() - birthDate.getFullYear();
         const m = endDate.getMonth() - birthDate.getMonth();
 
         if (m < 0 || (m === 0 && endDate.getDate() < birthDate.getDate())) {
-            age--;
+            years--;
         }
 
-        if (isNaN(age) || age < 0) return '';
-        return `${age} yrs`;
+        if (years >= 1) {
+            return `${years} yrs`;
+        }
+
+        // Less than 1 year, calculate months
+        let months = (endDate.getFullYear() - birthDate.getFullYear()) * 12 + (endDate.getMonth() - birthDate.getMonth());
+        if (endDate.getDate() < birthDate.getDate()) {
+            months--;
+        }
+
+        if (months >= 1) {
+            return `${months} months`;
+        }
+
+        // Less than 1 month, calculate days
+        const diffTime = endDate.getTime() - birthDate.getTime();
+        const days = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+        return `${days} days`;
     };
 
     const age = calculateAge(member.birth_date, member.death_date);
