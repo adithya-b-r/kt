@@ -36,41 +36,56 @@ export function FeedbackModal() {
   const [hasSubmitted, setHasSubmitted] = useState(false);
 
   const pathname = usePathname();
-  const [timerStarted, setTimerStarted] = useState(false);
+  const [prevPath, setPrevPath] = useState<string | null>(null);
 
+  // Initialize previous path tracking
   useEffect(() => {
-    if (!user) return; // Don't track if not logged in
-
-    // Check if we already have a start time in session storage
-    const storedStartTime = sessionStorage.getItem('feedback_start_time');
-
-    if (storedStartTime) {
-      if (!timerStarted) setTimerStarted(true);
-    } else if (pathname?.startsWith('/tree') && !hasSubmitted) {
-      // First time visiting tree in this session
-      sessionStorage.setItem('feedback_start_time', Date.now().toString());
-      setTimerStarted(true);
+    if (pathname) {
+      setPrevPath(pathname);
     }
-  }, [pathname, hasSubmitted, timerStarted, user]);
+  }, []);
 
+  // Monitor path changes to detect "exit" from tree
   useEffect(() => {
-    if (hasSubmitted || open || !user) return;
+    if (!pathname || !user) return;
 
-    const interval = setInterval(() => {
-      const storedStartTime = sessionStorage.getItem('feedback_start_time');
-      if (storedStartTime) {
-        const elapsed = Date.now() - parseInt(storedStartTime, 10);
+    // Check if we are navigating AWAY from tree (users act of "exiting")
+    // Condition: Previous path was /tree..., Current path is NOT /tree...
+    const isExitingTree = prevPath?.startsWith('/tree') && !pathname.startsWith('/tree');
 
-        // Check if 2 minutes (120000ms) have passed
-        if (elapsed >= 120000) {
-          setOpen(true);
-          sessionStorage.removeItem('feedback_start_time');
+    if (isExitingTree) {
+      const lastPromptDate = localStorage.getItem('feedback_last_prompt_date');
+      const now = Date.now();
+      const oneDay = 24 * 60 * 60 * 1000;
+
+      // Rules:
+      // 1. Not already open or submitted in this session (handled by state)
+      // 2. User has NOT been prompted in the last 24 hours
+      let shouldShow = false;
+
+      if (!open && !hasSubmitted) {
+        if (!lastPromptDate) {
+          shouldShow = true;
+        } else {
+          const lastPromptTime = parseInt(lastPromptDate, 10);
+          if (now - lastPromptTime > oneDay) {
+            shouldShow = true;
+          }
         }
       }
-    }, 1000); // Check every second
 
-    return () => clearInterval(interval);
-  }, [hasSubmitted, open, user]);
+      if (shouldShow) {
+        setOpen(true);
+        localStorage.setItem('feedback_last_prompt_date', now.toString());
+      }
+    }
+
+    // Update prevPath for next change
+    setPrevPath(pathname);
+  }, [pathname, user, open, hasSubmitted, prevPath]);
+
+  // Remove the old timer logic entirely
+  // (The previous timer useEffect is replaced by this navigation effect)
 
   const handleSubmit = async () => {
     if (!sentiment) {
