@@ -53,7 +53,7 @@ import { CldUploadWidget } from 'next-cloudinary';
 const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
     const {
         familyTree,
-        familyMembers,
+        familyMembers: rawFamilyMembers,
         relationships,
         loading,
         addFamilyMember,
@@ -64,6 +64,20 @@ const FamilyTreeBuilder = ({ treeId }: { treeId: string }) => {
     } = useFamilyTree(treeId);
 
     const { user } = useAuth();
+
+    const familyMembers = useMemo(() => {
+        return rawFamilyMembers.map(member => {
+            if (member.is_root && user?.date_of_birth) {
+                return {
+                    ...member,
+                    birth_date: typeof user.date_of_birth === 'string'
+                        ? user.date_of_birth.split('T')[0]
+                        : new Date(user.date_of_birth).toISOString().split('T')[0]
+                };
+            }
+            return member;
+        });
+    }, [rawFamilyMembers, user]);
     const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
     const [isDetailPanelOpen, setIsDetailPanelOpen] = useState(false);
     const [isAddingMember, setIsAddingMember] = useState(false);
